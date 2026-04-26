@@ -23,7 +23,7 @@ services:
       DATABASE_URL: postgresql://batchcraft:${POSTGRES_PASSWORD:-batchcraft}@db:5432/batchcraft
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-jwt-in-production}
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:6000,https://batchcraft.yourdomain.com}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:6080,https://batchcraft.yourdomain.com}
     depends_on:
       db:
         condition: service_healthy
@@ -40,7 +40,7 @@ services:
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:6001}
     ports:
-      - "${HOST_FRONTEND_PORT:-6000}:80"
+      - "${HOST_FRONTEND_PORT:-6080}:80"
     depends_on:
       - backend
 
