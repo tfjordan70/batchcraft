@@ -30,7 +30,7 @@ services:
     volumes:
       - ./backend:/app
     ports:
-      - "6001:5000"
+      - "${HOST_BACKEND_PORT:-6001}:5000"
 
   frontend:
     build:
@@ -40,7 +40,7 @@ services:
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:6001}
     ports:
-      - "6000:80"
+      - "${HOST_FRONTEND_PORT:-6000}:80"
     depends_on:
       - backend
 

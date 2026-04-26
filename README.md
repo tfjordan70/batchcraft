@@ -30,6 +30,8 @@ Docker expects this **repository root** as the Compose project directory (`docke
 └── frontend/         # Vite build + Nginx (Dockerfile)
 ```
 
+Published ports default to **6000** (frontend) and **6001** (backend). If a port is already taken on the host, set `HOST_FRONTEND_PORT` / `HOST_BACKEND_PORT` in `.env` (see `.env.example`) and point your reverse proxy at the frontend port you chose.
+
 ---
 
 ## Quick Start (Local Dev)
@@ -70,8 +72,8 @@ rsync -av --exclude node_modules --exclude .git . forge@your-server:/home/forge/
 docker compose up -d --build
 
 # 4. In Nginx Proxy Manager:
-#    Proxy host → your public hostname → http://127.0.0.1:6000
-#    (Compose maps the frontend container to host port 6000; it proxies /api to the backend.)
+#    Proxy host → your public hostname → http://127.0.0.1:<HOST_FRONTEND_PORT>
+#    (Default 6000; same value as HOST_FRONTEND_PORT in .env.)
 #    SSL: Let's Encrypt as usual
 ```
 
