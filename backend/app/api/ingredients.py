@@ -3,7 +3,7 @@ import os
 from flask import Blueprint, request, jsonify, current_app
 from app import db
 from app.models import Ingredient, IngredientLot, InventoryTransaction
-from app.api.helpers import tenant_required, require_role
+from app.api.helpers import tenant_required
 from app.services.ingredient_lookup import lookup_with_openai
 
 bp = Blueprint("ingredients", __name__)
@@ -110,7 +110,6 @@ def update_ingredient(tenant_id, current_user, ingredient_id):
 
 @bp.route("/<ingredient_id>", methods=["DELETE"])
 @tenant_required
-@require_role("owner", "admin")
 def delete_ingredient(tenant_id, current_user, ingredient_id):
     ingredient = Ingredient.query.filter_by(id=ingredient_id, tenant_id=tenant_id).first_or_404()
     ingredient.is_active = False  # soft delete

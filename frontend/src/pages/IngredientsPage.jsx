@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import toast from "react-hot-toast";
-import { useIngredients, useCreateIngredient, useUpdateIngredient, useAddLot, useInventoryTransactions, useIngredientLookup } from "../hooks/useApi";
+import { useIngredients, useCreateIngredient, useUpdateIngredient, useDeleteIngredient, useAddLot, useInventoryTransactions, useIngredientLookup } from "../hooks/useApi";
 import { exportIngredients } from "../utils/exports";
 
 const CATEGORIES = [
@@ -32,6 +32,7 @@ const CAT_BG = {
 export default function IngredientsPage() {
   const { data: ingredients = [], isLoading } = useIngredients({ stock: true });
   const createIngredient = useCreateIngredient();
+  const deleteIngredient = useDeleteIngredient();
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [showAdd, setShowAdd] = useState(false);
@@ -46,6 +47,12 @@ export default function IngredientsPage() {
   ), [ingredients, catFilter, search]);
 
   const lowStockCount = ingredients.filter(i => i.stock_on_hand < 200).length;
+
+  const confirmDeleteIngredient = (ing) => {
+    const msg = `Remove “${ing.name}” from your ingredient list?\n\nIt will be archived (hidden). Existing recipes that reference it are unchanged. Stock history is kept.`;
+    if (!window.confirm(msg)) return;
+    deleteIngredient.mutate(ing.id);
+  };
 
   if (isLoading) return <PageShell><div style={S.loading}>Loading ingredients…</div></PageShell>;
 
@@ -127,10 +134,11 @@ export default function IngredientsPage() {
                     </div>
                   </td>
                   <td style={{ padding: "13px 16px" }}>
-                    <div style={{ display: "flex", gap: 6 }}>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       <Btn variant="sage" small onClick={() => setLotModal(ing)}>+ Lot</Btn>
                       <Btn variant="ghost" small onClick={() => setEditModal(ing)}>Edit</Btn>
                       <Btn variant="ghost" small onClick={() => setLedgerModal(ing)}>Ledger</Btn>
+                      <Btn variant="danger" small disabled={deleteIngredient.isPending} onClick={() => confirmDeleteIngredient(ing)}>Delete</Btn>
                     </div>
                   </td>
                 </tr>
@@ -265,12 +273,22 @@ function AddIngredientModal({ onClose, onCreate }) {
 
 function EditIngredientModal({ ingredient, onClose }) {
   const updateIngredient = useUpdateIngredient();
+  const deleteIngredient = useDeleteIngredient();
   const [form, setForm] = useState({ ...ingredient });
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSave = async () => {
     try {
       await updateIngredient.mutateAsync({ id: ingredient.id, ...form });
+      onClose();
+    } catch {}
+  };
+
+  const handleDelete = async () => {
+    const msg = `Remove “${ingredient.name}” from your ingredient list?\n\nIt will be archived (hidden). Existing recipes that reference it are unchanged.`;
+    if (!window.confirm(msg)) return;
+    try {
+      await deleteIngredient.mutateAsync(ingredient.id);
       onClose();
     } catch {}
   };
@@ -291,9 +309,14 @@ function EditIngredientModal({ ingredient, onClose }) {
         <Field label="SAP KOH"><input type="number" step="0.001" value={form.sap_value_koh || ""} onChange={e => set("sap_value_koh", e.target.value)} style={S.input} /></Field>
         <Field label="Notes" span={2}><textarea value={form.notes || ""} onChange={e => set("notes", e.target.value)} rows={2} style={{ ...S.input, resize: "vertical" }} /></Field>
       </div>
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 20 }}>
-        <Btn variant="secondary" onClick={onClose}>Cancel</Btn>
-        <Btn onClick={handleSave} disabled={updateIngredient.isPending}>{updateIngredient.isPending ? "Saving…" : "Save Changes"}</Btn>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginTop: 20 }}>
+        <Btn variant="danger" onClick={handleDelete} disabled={deleteIngredient.isPending}>
+          {deleteIngredient.isPending ? "Removing…" : "Delete ingredient"}
+        </Btn>
+        <div style={{ display: "flex", gap: 10 }}>
+          <Btn variant="secondary" onClick={onClose}>Cancel</Btn>
+          <Btn onClick={handleSave} disabled={updateIngredient.isPending}>{updateIngredient.isPending ? "Saving…" : "Save Changes"}</Btn>
+        </div>
       </div>
     </Modal>
   );

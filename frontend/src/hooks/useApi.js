@@ -46,6 +46,20 @@ export function useUpdateIngredient() {
   });
 }
 
+export function useDeleteIngredient() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.delete(`/ingredients/${id}`).then(r => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["ingredients"] });
+      qc.invalidateQueries({ queryKey: ["inventory"] });
+      qc.invalidateQueries({ queryKey: ["recipes"] });
+      toast.success("Ingredient removed from list");
+    },
+    onError: (e) => toast.error(e.response?.data?.error || "Could not delete ingredient"),
+  });
+}
+
 export function useAddLot() {
   const qc = useQueryClient();
   return useMutation({
