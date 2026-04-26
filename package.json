@@ -1,0 +1,10 @@
+{
+  "name": "batchcraft",
+  "private": true,
+  "description": "Root scripts delegate to frontend/ (Flask API lives in backend/).",
+  "scripts": {
+    "install": "npm install --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "dev": "npm run dev --prefix frontend"
+  }
+}

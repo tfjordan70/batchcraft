@@ -24,10 +24,11 @@ Docker expects this **repository root** as the Compose project directory (`docke
 
 ```text
 .
+├── package.json      # forwards npm scripts to frontend/
 ├── docker-compose.yml
 ├── .env.example
 ├── backend/          # Flask API (Dockerfile)
-└── frontend/         # Vite build + Nginx (Dockerfile)
+└── frontend/         # Vite + Nginx (package.json lives here)
 ```
 
 Published ports default to **6080** (frontend) and **6001** (backend). **Do not use 6000 for the web UI** — Firefox and Chromium treat it as a restricted port. If ports clash, set `HOST_FRONTEND_PORT` / `HOST_BACKEND_PORT` in `.env` (see `.env.example`) and point your reverse proxy at the frontend port you chose.
@@ -49,8 +50,9 @@ docker compose exec backend flask db init
 docker compose exec backend flask db migrate -m "initial"
 docker compose exec backend flask db upgrade
 
-# 4. Frontend dev server
-cd frontend && npm install && npm run dev
+# 4. Frontend (from repo root — package.json delegates to frontend/)
+npm install && npm run dev
+# Or: cd frontend && npm install && npm run dev
 ```
 
 App runs at: http://localhost:6080  
