@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useIngredients } from "../hooks/useApi";
+import { computeSoapBarQualities, SOAP_QUALITY_RANGES } from "../utils/soapQualities";
 
 // Built-in SAP values for common oils (fallback when not in DB)
 const DEFAULT_OILS = [
@@ -22,14 +23,6 @@ const DEFAULT_OILS = [
   { name: "Argan Oil",             sap_naoh: 0.136, sap_koh: 0.191, category: "oil" },
   { name: "Babassu Oil",           sap_naoh: 0.175, sap_koh: 0.245, category: "oil" },
 ];
-
-const SOAP_QUALITY_RANGES = {
-  hardness:    { min: 29, max: 54, label: "Hardness",     desc: "How hard the bar is" },
-  cleansing:   { min: 12, max: 22, label: "Cleansing",    desc: "Removes oils/dirt" },
-  conditioning:{ min: 44, max: 69, label: "Conditioning", desc: "Skin feel" },
-  bubbly:      { min: 14, max: 46, label: "Bubbly",       desc: "Big fluffy bubbles" },
-  creamy:      { min: 16, max: 48, label: "Creamy",       desc: "Stable lather" },
-};
 
 export default function LyeCalculator() {
   const { data: dbIngredients = [] } = useIngredients();
@@ -81,25 +74,25 @@ export default function LyeCalculator() {
     const lyeConc = (lyeAdjusted / (lyeAdjusted + waterAmount)) * 100;
     const totalBatch = totalOil + lyeAdjusted + waterAmount;
 
-    // Rough soap quality from fatty acid composition (simplified)
-    const hardnessPct = (oils.reduce((s, o) => {
-      const oil = oilLibrary.find(l => l.name === o.oilName);
-      if (!oil) return s;
-      const isHard = ["Coconut Oil", "Palm Oil", "Palm Kernel", "Cocoa Butter", "Shea", "Mango", "Tallow", "Lard", "Babassu"].some(n => oil.name.includes(n));
-      return s + (isHard ? Number(o.amount) : 0);
-    }, 0) / totalOil) * 100;
+    const qualityRows = oils.map((o) => ({
+      ingredient_name: o.oilName,
+      amount: o.amount,
+      unit: "g",
+      phase: "oils",
+    }));
+    const qualities = computeSoapBarQualities(qualityRows);
 
     return {
       lyeNeeded: lyeAdjusted,
       waterAmount,
       lyeConc,
       totalBatch,
-      hardnessPct: Math.round(hardnessPct),
+      qualities,
       warnings: [
         lyeConc > 40 && "⚠️ High lye concentration — water discount may cause issues for beginners",
         lyeConc < 25 && "ℹ️ Very low concentration — bars may take longer to unmold",
-        hardnessPct > 60 && "⚠️ High saturated fats — bar may be too hard or brittle",
-        hardnessPct < 20 && "ℹ️ Low saturated fats — bar may be soft, extend cure time",
+        qualities && qualities.hardness > 54 && "⚠️ High hardness estimate — bar may be brittle",
+        qualities && qualities.hardness < 29 && "ℹ️ Low hardness estimate — bar may be soft, extend cure time",
       ].filter(Boolean),
     };
   }, [oils, lyeType, kohPurity, superFat, waterPct, totalOil, oilLibrary]);
@@ -249,10 +242,14 @@ export default function LyeCalculator() {
               ))}
 
               {/* Soap quality estimate */}
-              <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(250,246,237,0.15)" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(250,246,237,0.4)", textTransform: "uppercase", marginBottom: 10 }}>Estimated Bar Quality</div>
-                <QualityBar label="Hardness" value={results.hardnessPct} min={29} max={54} />
-              </div>
+              {results.qualities && (
+                <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(250,246,237,0.15)" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(250,246,237,0.4)", textTransform: "uppercase", marginBottom: 10 }}>Estimated Bar Quality</div>
+                  {Object.entries(SOAP_QUALITY_RANGES).map(([key, meta]) => (
+                    <QualityBar key={key} label={meta.label} value={results.qualities[key]} min={meta.min} max={meta.max} />
+                  ))}
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ background: "#FFF0DC", borderRadius: 16, padding: 24, textAlign: "center", color: "#5C3D1A", fontSize: 14 }}>

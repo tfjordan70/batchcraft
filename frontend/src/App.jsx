@@ -8,6 +8,7 @@ import BatchCompletion from "./pages/BatchCompletion";
 
 import IngredientsPage from "./pages/IngredientsPage";
 import RecipesPage from "./pages/RecipesPage";
+import RecipeDetailsPage from "./pages/RecipeDetailsPage";
 import BatchesPage from "./pages/BatchesPage";
 import LyeCalculator from "./pages/LyeCalculator";
 import FragranceCalculator from "./pages/FragranceCalculator";
@@ -238,6 +239,7 @@ export default function App() {
                   <Route path="/recipes" element={<RecipesPage />} />
                   <Route path="/recipes/new" element={<RecipeBuilder />} />
                   <Route path="/recipes/:id/edit" element={<RecipeBuilder />} />
+                  <Route path="/recipes/:id" element={<RecipeDetailsPage />} />
                   <Route path="/batches" element={<BatchesPage />} />
                   <Route path="/batches/:id/complete" element={<BatchCompletion />} />
                   <Route path="/ingredients" element={<IngredientsPage />} />

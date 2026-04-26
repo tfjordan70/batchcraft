@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useRecipes, useScaleRecipe, useIngredients } from "../hooks/useApi";
 import { exportRecipe } from "../utils/exports";
 
@@ -113,7 +113,11 @@ function RecipeCard({ recipe, cpu, onEdit, onScale, onExport, onBatch }) {
           <span style={{ fontSize: 11, fontFamily: "'JetBrains Mono'", color: "#5C3D1A", background: "#FFF0DC", padding: "2px 7px", borderRadius: 4 }}>v{recipe.version}</span>
         </div>
 
-        <h3 style={{ fontSize: 17, fontFamily: "'Playfair Display'", lineHeight: 1.3, marginBottom: 8 }}>{recipe.name}</h3>
+        <h3 style={{ fontSize: 17, fontFamily: "'Playfair Display'", lineHeight: 1.3, marginBottom: 8, marginTop: 0 }}>
+          <Link to={`/recipes/${recipe.id}`} style={{ color: "inherit", textDecoration: "none" }} onClick={e => e.stopPropagation()}>
+            {recipe.name}
+          </Link>
+        </h3>
 
         {recipe.description && (
           <p style={{ fontSize: 13, color: "#5C3D1A", lineHeight: 1.5, marginBottom: 14, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useRecipe, useCreateRecipe, useUpdateRecipe, useIngredients } from "../hooks/useApi";
 
@@ -46,7 +46,7 @@ export default function RecipeBuilder() {
   const [activePhase, setActivePhase] = useState(null);
 
   // Populate form when editing
-  useState(() => {
+  useEffect(() => {
     if (existingRecipe && isEdit) {
       setForm({
         name: existingRecipe.name,
@@ -59,7 +59,7 @@ export default function RecipeBuilder() {
       });
       setIngredients(existingRecipe.ingredients || []);
     }
-  }, [existingRecipe]);
+  }, [existingRecipe, isEdit]);
 
   const phases = PHASES[form.category] || PHASES.default;
   const totalWeight = ingredients.reduce((s, i) => s + Number(i.amount || 0), 0);
