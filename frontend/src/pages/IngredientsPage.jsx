@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { useIngredients, useCreateIngredient, useUpdateIngredient, useAddLot, useInventoryTransactions } from "../hooks/useApi";
+import toast from "react-hot-toast";
+import { useIngredients, useCreateIngredient, useUpdateIngredient, useAddLot, useInventoryTransactions, useIngredientLookup } from "../hooks/useApi";
 import { exportIngredients } from "../utils/exports";
 
 const CATEGORIES = [
@@ -165,9 +166,44 @@ function StockBar({ value, low, critical }) {
 
 function AddIngredientModal({ onClose, onCreate }) {
   const [form, setForm] = useState({ name: "", inci_name: "", category: "oil", unit: "g", cost_per_unit: "", supplier: "", cas_number: "", sap_value_naoh: "", sap_value_koh: "", max_usage_pct: "", notes: "", safety_notes: "" });
+  const [supplierHint, setSupplierHint] = useState("");
   const [saving, setSaving] = useState(false);
+  const lookup = useIngredientLookup();
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const applyLookup = (data) => {
+    const hint = supplierHint.trim();
+    const supplierFromHint = hint && !/^https?:\/\//i.test(hint) ? hint : "";
+    const urlNote = hint && /^https?:\/\//i.test(hint) ? `Product page: ${hint}` : "";
+    setForm(f => ({
+      ...f,
+      inci_name: data.inci_name != null ? data.inci_name : f.inci_name,
+      category: data.category || f.category,
+      unit: data.unit || "g",
+      cost_per_unit: data.cost_per_unit != null ? String(data.cost_per_unit) : f.cost_per_unit,
+      supplier: (data.supplier && data.supplier.trim()) || supplierFromHint || f.supplier,
+      cas_number: data.cas_number != null ? data.cas_number : f.cas_number,
+      sap_value_naoh: data.sap_value_naoh != null ? String(data.sap_value_naoh) : f.sap_value_naoh,
+      sap_value_koh: data.sap_value_koh != null ? String(data.sap_value_koh) : f.sap_value_koh,
+      max_usage_pct: data.max_usage_pct != null ? String(data.max_usage_pct) : f.max_usage_pct,
+      notes: [urlNote, data.notes, f.notes].filter(Boolean).join("\n\n"),
+    }));
+  };
+
+  const handleAiLookup = async () => {
+    if (!form.name.trim()) return;
+    try {
+      const data = await lookup.mutateAsync({
+        name: form.name.trim(),
+        supplier_or_website: supplierHint.trim() || undefined,
+      });
+      applyLookup(data);
+      toast.success("AI suggestions applied — review fields before saving");
+    } catch {
+      /* toast from hook */
+    }
+  };
 
   const handleSave = async () => {
     if (!form.name.trim()) return;
@@ -183,7 +219,19 @@ function AddIngredientModal({ onClose, onCreate }) {
   };
 
   return (
-    <Modal title="Add Ingredient" onClose={onClose} width={580}>
+    <Modal title="Add Ingredient" onClose={onClose} width={640}>
+      <div style={{ padding: "14px 16px", background: "#E0F2FE", borderRadius: 12, marginBottom: 16, border: "2px solid #7DD3FC" }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#0369A1", letterSpacing: "0.04em", marginBottom: 8 }}>AI LOOKUP</div>
+        <p style={{ fontSize: 13, color: "#0C4A6E", margin: "0 0 12px", lineHeight: 1.45 }}>
+          Enter the <strong>ingredient name</strong> and optionally a <strong>supplier name or product URL</strong>, then run lookup. Values are estimates — always verify SAP, CAS, cost, and IFRA limits with your SDS or supplier.
+        </p>
+        <Field label="Supplier or website (optional, for context)" span={2}>
+          <input value={supplierHint} onChange={e => setSupplierHint(e.target.value)} style={S.input} placeholder="Bramble Berry, or https://…" />
+        </Field>
+        <Btn variant="secondary" onClick={handleAiLookup} disabled={lookup.isPending || !form.name.trim()}>
+          {lookup.isPending ? "Looking up…" : "✨ Look up with AI"}
+        </Btn>
+      </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <Field label="Name *" span={2}><input value={form.name} onChange={e => set("name", e.target.value)} style={S.input} placeholder="Coconut Oil (76°)" autoFocus /></Field>
         <Field label="INCI Name"><input value={form.inci_name} onChange={e => set("inci_name", e.target.value)} style={S.input} placeholder="Cocos Nucifera Oil" /></Field>
@@ -197,8 +245,8 @@ function AddIngredientModal({ onClose, onCreate }) {
             {["g", "ml", "oz", "lb"].map(u => <option key={u}>{u}</option>)}
           </select>
         </Field>
-        <Field label="Cost per unit ($)"><input type="number" step="0.0001" value={form.cost_per_unit} onChange={e => set("cost_per_unit", e.target.value)} style={S.input} placeholder="0.0045" /></Field>
-        <Field label="Supplier" span={2}><input value={form.supplier} onChange={e => set("supplier", e.target.value)} style={S.input} placeholder="Brambleberry, Bulk Apothecary…" /></Field>
+        <Field label="Cost per unit ($)"><input type="number" step="0.0001" value={form.cost_per_unit} onChange={e => set("cost_per_unit", e.target.value)} style={S.input} placeholder="0.0045 / g" /></Field>
+        <Field label="Supplier (saved on ingredient)" span={2}><input value={form.supplier} onChange={e => set("supplier", e.target.value)} style={S.input} placeholder="Bramble Berry, Bulk Apothecary…" /></Field>
         <Field label="CAS Number"><input value={form.cas_number} onChange={e => set("cas_number", e.target.value)} style={S.input} placeholder="8001-31-8" /></Field>
         <Field label="Max Usage %"><input type="number" step="0.1" value={form.max_usage_pct} onChange={e => set("max_usage_pct", e.target.value)} style={S.input} placeholder="3.0" /></Field>
         <Field label="SAP Value (NaOH)"><input type="number" step="0.001" value={form.sap_value_naoh} onChange={e => set("sap_value_naoh", e.target.value)} style={S.input} placeholder="0.190" /></Field>

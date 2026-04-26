@@ -28,6 +28,15 @@ export function useCreateIngredient() {
   });
 }
 
+/** OpenAI-assisted field suggestions; requires server OPENAI_API_KEY */
+export function useIngredientLookup() {
+  return useMutation({
+    mutationFn: ({ name, supplier_or_website }) =>
+      api.post("/ingredients/lookup", { name, supplier_or_website }).then(r => r.data),
+    onError: (e) => toast.error(e.response?.data?.error || "Lookup failed"),
+  });
+}
+
 export function useUpdateIngredient() {
   const qc = useQueryClient();
   return useMutation({

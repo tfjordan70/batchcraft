@@ -1,9 +1,36 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app import db
 from app.models import Ingredient, IngredientLot, InventoryTransaction
 from app.api.helpers import tenant_required, require_role
+from app.services.ingredient_lookup import lookup_with_openai
 
 bp = Blueprint("ingredients", __name__)
+
+
+@bp.route("/lookup", methods=["POST"])
+@tenant_required
+def lookup_ingredient_ai(tenant_id, current_user):
+    """Suggest ingredient fields using OpenAI (requires OPENAI_API_KEY)."""
+    data = request.get_json() or {}
+    name = (data.get("name") or "").strip()
+    if not name:
+        return jsonify({"error": "name is required"}), 400
+
+    api_key = current_app.config.get("OPENAI_API_KEY") or ""
+    if not api_key:
+        return jsonify({
+            "error": "AI lookup is not configured. Set OPENAI_API_KEY in the server environment.",
+        }), 503
+
+    supplier_hint = (data.get("supplier_or_website") or "").strip() or None
+    model = current_app.config.get("OPENAI_MODEL") or "gpt-4o-mini"
+
+    try:
+        result = lookup_with_openai(name, supplier_hint, api_key=api_key, model=model)
+    except RuntimeError as e:
+        return jsonify({"error": str(e)}), 502
+
+    return jsonify(result)
 
 
 @bp.route("/", methods=["GET"])

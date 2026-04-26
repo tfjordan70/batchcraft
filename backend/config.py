@@ -12,6 +12,8 @@ class Config:
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:6080").split(",")
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+    OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
 
 
 class DevelopmentConfig(Config):
