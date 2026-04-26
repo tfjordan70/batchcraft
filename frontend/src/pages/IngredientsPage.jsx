@@ -220,20 +220,21 @@ function AddIngredientModal({ onClose, onCreate }) {
 
   return (
     <Modal title="Add Ingredient" onClose={onClose} width={640}>
-      <div style={{ padding: "14px 16px", background: "#E0F2FE", borderRadius: 12, marginBottom: 16, border: "2px solid #7DD3FC" }}>
-        <div style={{ fontSize: 12, fontWeight: 700, color: "#0369A1", letterSpacing: "0.04em", marginBottom: 8 }}>AI LOOKUP</div>
-        <p style={{ fontSize: 13, color: "#0C4A6E", margin: "0 0 12px", lineHeight: 1.45 }}>
-          Enter the <strong>ingredient name</strong> and optionally a <strong>supplier name or product URL</strong>, then run lookup. Values are estimates — always verify SAP, CAS, cost, and IFRA limits with your SDS or supplier.
-        </p>
-        <Field label="Supplier or website (optional, for context)" span={2}>
-          <input value={supplierHint} onChange={e => setSupplierHint(e.target.value)} style={S.input} placeholder="Bramble Berry, or https://…" />
-        </Field>
-        <Btn variant="secondary" onClick={handleAiLookup} disabled={lookup.isPending || !form.name.trim()}>
-          {lookup.isPending ? "Looking up…" : "✨ Look up with AI"}
-        </Btn>
-      </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <Field label="Name *" span={2}><input value={form.name} onChange={e => set("name", e.target.value)} style={S.input} placeholder="Coconut Oil (76°)" autoFocus /></Field>
+        <div style={{ gridColumn: "1 / -1", padding: "16px 18px", marginBottom: 4, background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 50%, #E0F2FE 100%)", borderRadius: 14, border: "3px solid #EA580C", boxShadow: "0 4px 20px rgba(234, 88, 12, 0.2)" }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: "#C2410C", marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+            <span aria-hidden>✨</span> Look up with AI (ChatGPT)
+          </div>
+          <p style={{ fontSize: 13, color: "#431407", margin: "0 0 14px", lineHeight: 1.5, fontWeight: 500 }}>
+            Add a supplier name or product page URL for context, then fill cost per gram, SAP (NaOH & KOH), CAS, and max usage when possible. <strong>Always verify</strong> against your SDS or supplier.
+          </p>
+          <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#9A3412", marginBottom: 6 }}>Supplier or website (optional)</label>
+          <input value={supplierHint} onChange={e => setSupplierHint(e.target.value)} style={{ ...S.input, marginBottom: 12, borderWidth: 2, borderColor: "#FDBA74" }} placeholder="e.g. Bramble Berry, or paste a product https://…" />
+          <Btn onClick={handleAiLookup} disabled={lookup.isPending || !form.name.trim()}>
+            {lookup.isPending ? "Looking up…" : "Run AI lookup & fill fields"}
+          </Btn>
+        </div>
         <Field label="INCI Name"><input value={form.inci_name} onChange={e => set("inci_name", e.target.value)} style={S.input} placeholder="Cocos Nucifera Oil" /></Field>
         <Field label="Category">
           <select value={form.category} onChange={e => set("category", e.target.value)} style={S.input}>
