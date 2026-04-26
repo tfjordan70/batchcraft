@@ -54,7 +54,7 @@ export function useDeleteIngredient() {
       qc.invalidateQueries({ queryKey: ["ingredients"] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
       qc.invalidateQueries({ queryKey: ["recipes"] });
-      toast.success("Ingredient removed from list");
+      toast.success("Ingredient archived");
     },
     onError: (e) => toast.error(e.response?.data?.error || "Could not delete ingredient"),
   });

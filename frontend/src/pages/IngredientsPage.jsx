@@ -49,7 +49,7 @@ export default function IngredientsPage() {
   const lowStockCount = ingredients.filter(i => i.stock_on_hand < 200).length;
 
   const confirmDeleteIngredient = (ing) => {
-    const msg = `Remove “${ing.name}” from your ingredient list?\n\nIt will be archived (hidden). Existing recipes that reference it are unchanged. Stock history is kept.`;
+    const msg = `Archive “${ing.name}”?\n\nIt will disappear from this list but stay in the database. Recipes that already use it are unchanged. Inventory history is kept.`;
     if (!window.confirm(msg)) return;
     deleteIngredient.mutate(ing.id);
   };
@@ -133,12 +133,25 @@ export default function IngredientsPage() {
                       <StockBar value={ing.stock_on_hand} critical={critical} low={low} />
                     </div>
                   </td>
-                  <td style={{ padding: "13px 16px" }}>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <td style={{ padding: "13px 16px", verticalAlign: "top", minWidth: 200, width: 200 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "stretch" }}>
                       <Btn variant="sage" small onClick={() => setLotModal(ing)}>+ Lot</Btn>
-                      <Btn variant="ghost" small onClick={() => setEditModal(ing)}>Edit</Btn>
-                      <Btn variant="ghost" small onClick={() => setLedgerModal(ing)}>Ledger</Btn>
-                      <Btn variant="danger" small disabled={deleteIngredient.isPending} onClick={() => confirmDeleteIngredient(ing)}>Delete</Btn>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <Btn variant="ghost" small onClick={() => setEditModal(ing)}>Edit</Btn>
+                        <Btn variant="ghost" small onClick={() => setLedgerModal(ing)}>Ledger</Btn>
+                      </div>
+                      <button
+                        type="button"
+                        disabled={deleteIngredient.isPending}
+                        onClick={() => confirmDeleteIngredient(ing)}
+                        style={{
+                          fontFamily: "'DM Sans'", fontSize: 12, fontWeight: 700, cursor: deleteIngredient.isPending ? "not-allowed" : "pointer",
+                          padding: "8px 10px", borderRadius: 8, border: "2px solid #B91C1C", background: "#FEF2F2", color: "#991B1B",
+                          opacity: deleteIngredient.isPending ? 0.6 : 1,
+                        }}
+                      >
+                        {deleteIngredient.isPending ? "…" : "Archive ingredient"}
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -285,7 +298,7 @@ function EditIngredientModal({ ingredient, onClose }) {
   };
 
   const handleDelete = async () => {
-    const msg = `Remove “${ingredient.name}” from your ingredient list?\n\nIt will be archived (hidden). Existing recipes that reference it are unchanged.`;
+    const msg = `Archive “${ingredient.name}”?\n\nIt will disappear from this list but stay in the database. Recipes that already use it are unchanged.`;
     if (!window.confirm(msg)) return;
     try {
       await deleteIngredient.mutateAsync(ingredient.id);
@@ -311,7 +324,7 @@ function EditIngredientModal({ ingredient, onClose }) {
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginTop: 20 }}>
         <Btn variant="danger" onClick={handleDelete} disabled={deleteIngredient.isPending}>
-          {deleteIngredient.isPending ? "Removing…" : "Delete ingredient"}
+          {deleteIngredient.isPending ? "Archiving…" : "Archive ingredient"}
         </Btn>
         <div style={{ display: "flex", gap: 10 }}>
           <Btn variant="secondary" onClick={onClose}>Cancel</Btn>
@@ -487,7 +500,7 @@ const S = {
   pageTitle: { fontSize: 28, fontFamily: "'Playfair Display'" },
   pageSub: { fontSize: 14, color: "#5C3D1A", marginTop: 4 },
   loading: { padding: "40px", color: "#5C3D1A", fontSize: 14 },
-  tableWrap: { background: "#FFFFFF", borderRadius: 16, border: "1px solid #E8C48A", overflow: "hidden" },
-  table: { width: "100%", borderCollapse: "collapse" },
+  tableWrap: { background: "#FFFFFF", borderRadius: 16, border: "1px solid #E8C48A", overflowX: "auto", overflowY: "hidden" },
+  table: { width: "100%", borderCollapse: "collapse", minWidth: 960 },
   input: { width: "100%", background: "#FFFFFF", border: "1px solid #E8C48A", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#1A1410", outline: "none", fontFamily: "inherit" },
 };
