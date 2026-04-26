@@ -74,8 +74,8 @@ export default function BatchCompletion() {
       <div style={styles.stepBar}>
         {STEP_LABELS.map((label, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ ...styles.stepDot, background: i <= step ? "#6B5010" : "#E8D5B4", color: i <= step ? "#FAF6ED" : "#8B6914" }}>{i + 1}</div>
-            <span style={{ fontSize: 13, fontWeight: i === step ? 600 : 400, color: i <= step ? "#4A380C" : "#8B6914" }}>{label}</span>
+            <div style={{ ...styles.stepDot, background: i <= step ? "#C2410C" : "#E8C48A", color: i <= step ? "#FFFCF7" : "#5C3D1A" }}>{i + 1}</div>
+            <span style={{ fontSize: 13, fontWeight: i === step ? 600 : 400, color: i <= step ? "#3D2914" : "#5C3D1A" }}>{label}</span>
             {i < STEP_LABELS.length - 1 && <div style={styles.stepLine} />}
           </div>
         ))}
@@ -86,7 +86,7 @@ export default function BatchCompletion() {
         {step === 0 && (
           <div>
             <h2 style={styles.stepTitle}>Review Batch</h2>
-            <p style={{ color: "#8B6914", marginBottom: 24, fontSize: 14 }}>Confirm you're completing the right batch before recording ingredient usage.</p>
+            <p style={{ color: "#5C3D1A", marginBottom: 24, fontSize: 14 }}>Confirm you're completing the right batch before recording ingredient usage.</p>
             <InfoRow label="Batch #" value={<span style={{ fontFamily: "'JetBrains Mono'", fontWeight: 600 }}>{batch.batch_number}</span>} />
             <InfoRow label="Recipe" value={batch.recipe_name} />
             <InfoRow label="Scale Factor" value={`${sf}× (${(sf * 100).toFixed(0)}% of base recipe)`} />
@@ -99,7 +99,7 @@ export default function BatchCompletion() {
               {recipeIngs.map(ri => (
                 <div key={ri.id} style={styles.ingRow}>
                   <span style={{ fontSize: 14 }}>{ri.ingredient_name}</span>
-                  <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 14, fontWeight: 600, color: "#6B5010" }}>
+                  <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 14, fontWeight: 600, color: "#C2410C" }}>
                     {(Number(ri.amount) * sf).toFixed(2)} {ri.unit}
                   </span>
                 </div>
@@ -112,7 +112,7 @@ export default function BatchCompletion() {
         {step === 1 && (
           <div>
             <h2 style={styles.stepTitle}>Record Actual Usage</h2>
-            <p style={{ color: "#8B6914", marginBottom: 24, fontSize: 14 }}>
+            <p style={{ color: "#5C3D1A", marginBottom: 24, fontSize: 14 }}>
               Adjust amounts if actuals differed from the recipe. Select the lot used for each ingredient for full traceability.
             </p>
             {recipeIngs.map(ri => {
@@ -126,7 +126,7 @@ export default function BatchCompletion() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                     <div>
                       <div style={{ fontSize: 15, fontWeight: 600 }}>{ri.ingredient_name}</div>
-                      <div style={{ fontSize: 12, color: "#8B6914" }}>Expected: {expectedAmt} {ri.unit}</div>
+                      <div style={{ fontSize: 12, color: "#5C3D1A" }}>Expected: {expectedAmt} {ri.unit}</div>
                     </div>
                     {ing && <div style={{ fontSize: 12, color: "#6D9B58", textAlign: "right" }}>{ing.stock_on_hand.toLocaleString()} {ing.unit} in stock</div>}
                   </div>
@@ -160,7 +160,7 @@ export default function BatchCompletion() {
                 </div>
               );
             })}
-            <div style={{ marginTop: 16, padding: "12px 16px", background: "#F3EAD6", borderRadius: 10, fontSize: 13, color: "#4A380C" }}>
+            <div style={{ marginTop: 16, padding: "12px 16px", background: "#FFF0DC", borderRadius: 10, fontSize: 13, color: "#3D2914" }}>
               Estimated ingredient cost: <strong>${totalCost.toFixed(2)}</strong>
             </div>
           </div>
@@ -170,7 +170,7 @@ export default function BatchCompletion() {
         {step === 2 && (
           <div>
             <h2 style={styles.stepTitle}>Record Actual Yield</h2>
-            <p style={{ color: "#8B6914", marginBottom: 24, fontSize: 14 }}>How much did the batch actually produce?</p>
+            <p style={{ color: "#5C3D1A", marginBottom: 24, fontSize: 14 }}>How much did the batch actually produce?</p>
             <div style={{ maxWidth: 400 }}>
               <div style={{ marginBottom: 16 }}>
                 <label style={styles.fieldLabel}>Actual yield ({recipe?.yield_unit || "g"})</label>
@@ -178,7 +178,7 @@ export default function BatchCompletion() {
                   placeholder={recipe ? String((recipe.yield_amount * sf).toFixed(0)) : ""}
                   style={{ ...styles.input, fontSize: 20, padding: "12px 16px", fontFamily: "'JetBrains Mono'" }} />
                 {recipe && yield_actual && (
-                  <div style={{ fontSize: 12, color: "#8B6914", marginTop: 4 }}>
+                  <div style={{ fontSize: 12, color: "#5C3D1A", marginTop: 4 }}>
                     {((Number(yield_actual) / (recipe.yield_amount * sf)) * 100).toFixed(1)}% of expected yield
                   </div>
                 )}
@@ -203,10 +203,10 @@ export default function BatchCompletion() {
         {step === 3 && (
           <div>
             <h2 style={styles.stepTitle}>Confirm & Complete</h2>
-            <p style={{ color: "#8B6914", marginBottom: 24, fontSize: 14 }}>
+            <p style={{ color: "#5C3D1A", marginBottom: 24, fontSize: 14 }}>
               Completing this batch will deduct the recorded ingredient amounts from your inventory.
             </p>
-            <div style={{ background: "#F3EAD6", borderRadius: 12, padding: 20, marginBottom: 24 }}>
+            <div style={{ background: "#FFF0DC", borderRadius: 12, padding: 20, marginBottom: 24 }}>
               <InfoRow label="Batch #" value={batch.batch_number} />
               <InfoRow label="Recipe" value={batch.recipe_name} />
               <InfoRow label="Actual yield" value={yield_actual ? `${yield_actual} ${recipe?.yield_unit}` : "Not recorded"} />
@@ -234,7 +234,7 @@ export default function BatchCompletion() {
               if (step === 0) initUsage();
             }}
             disabled={completeBatch.isPending}
-            style={{ ...styles.btnPrimary, background: step === STEPS.length - 1 ? "#4E7A3C" : "#6B5010" }}>
+            style={{ ...styles.btnPrimary, background: step === STEPS.length - 1 ? "#16A34A" : "#EA580C" }}>
             {step === STEPS.length - 1
               ? (completeBatch.isPending ? "Completing…" : "✓ Complete Batch")
               : "Continue →"}
@@ -247,8 +247,8 @@ export default function BatchCompletion() {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #E8D5B4", fontSize: 14 }}>
-      <span style={{ color: "#8B6914" }}>{label}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #E8C48A", fontSize: 14 }}>
+      <span style={{ color: "#5C3D1A" }}>{label}</span>
       <strong>{value}</strong>
     </div>
   );
@@ -256,16 +256,16 @@ function InfoRow({ label, value }) {
 
 const styles = {
   page: { padding: "32px 40px", maxWidth: 860, margin: "0 auto" },
-  loading: { padding: 40, color: "#8B6914" },
+  loading: { padding: 40, color: "#5C3D1A" },
   stepBar: { display: "flex", alignItems: "center", gap: 8, marginBottom: 28, flexWrap: "wrap" },
   stepDot: { width: 28, height: 28, borderRadius: 14, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, flexShrink: 0 },
-  stepLine: { width: 32, height: 2, background: "#E8D5B4" },
-  card: { background: "rgba(255,255,255,0.85)", borderRadius: 16, border: "1px solid #E8D5B4", padding: 32 },
+  stepLine: { width: 32, height: 2, background: "#E8C48A" },
+  card: { background: "#FFFFFF", borderRadius: 16, border: "1px solid #E8C48A", padding: 32 },
   stepTitle: { fontSize: 22, fontFamily: "'Playfair Display'", marginBottom: 8 },
-  ingRow: { display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "#FDFBF7", borderRadius: 8, marginBottom: 4 },
-  usageCard: { background: "#FDFBF7", border: "1px solid #E8D5B4", borderRadius: 10, padding: 16, marginBottom: 12 },
-  fieldLabel: { display: "block", fontSize: 12, fontWeight: 500, color: "#6B5010", marginBottom: 4 },
-  input: { width: "100%", background: "#FAF6ED", border: "1px solid #E8D5B4", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#2E2208", outline: "none", fontFamily: "inherit" },
-  btnPrimary: { background: "#6B5010", color: "#FDFBF7", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" },
-  btnSecondary: { background: "#F3EAD6", color: "#4A380C", border: "1px solid #E8D5B4", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" },
+  ingRow: { display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "#FFFFFF", borderRadius: 8, marginBottom: 4 },
+  usageCard: { background: "#FFFFFF", border: "1px solid #E8C48A", borderRadius: 10, padding: 16, marginBottom: 12 },
+  fieldLabel: { display: "block", fontSize: 12, fontWeight: 500, color: "#C2410C", marginBottom: 4 },
+  input: { width: "100%", background: "#FFFCF7", border: "1px solid #E8C48A", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#1A1410", outline: "none", fontFamily: "inherit" },
+  btnPrimary: { background: "#EA580C", color: "#FFFFFF", border: "none", borderRadius: 8, padding: "10px 24px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 12px rgba(234, 88, 12, 0.4)" },
+  btnSecondary: { background: "#FFF0DC", color: "#3D2914", border: "1px solid #E8C48A", borderRadius: 8, padding: "10px 20px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" },
 };

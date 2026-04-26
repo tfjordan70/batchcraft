@@ -114,7 +114,7 @@ export default function LyeCalculator() {
     <div style={{ padding: "32px 40px" }}>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 28, fontFamily: "'Playfair Display'" }}>Lye Calculator</h1>
-        <p style={{ color: "#8B6914", fontSize: 14, marginTop: 4 }}>Calculate NaOH or KOH for cold process & hot process soap</p>
+        <p style={{ color: "#5C3D1A", fontSize: 14, marginTop: 4 }}>Calculate NaOH or KOH for cold process & hot process soap</p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 20, alignItems: "start" }}>
@@ -124,7 +124,7 @@ export default function LyeCalculator() {
           <div style={S.card}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <h3 style={S.sectionTitle}>Oil Phase</h3>
-              <span style={{ fontSize: 13, color: "#8B6914" }}>Total: <strong style={{ fontFamily: "'JetBrains Mono'" }}>{totalOil.toFixed(1)}g</strong></span>
+              <span style={{ fontSize: 13, color: "#5C3D1A" }}>Total: <strong style={{ fontFamily: "'JetBrains Mono'" }}>{totalOil.toFixed(1)}g</strong></span>
             </div>
 
             {/* Oil rows */}
@@ -133,17 +133,17 @@ export default function LyeCalculator() {
               const pct = totalOil ? ((Number(o.amount) / totalOil) * 100).toFixed(1) : 0;
               const lyeContrib = oil ? (lyeType === "naoh" ? oil.sap_naoh : oil.sap_koh) * Number(o.amount) * (1 - superFat / 100) : 0;
               return (
-                <div key={idx} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8, padding: "10px 12px", background: "#FDFBF7", borderRadius: 10 }}>
+                <div key={idx} style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 8, padding: "10px 12px", background: "#FFFFFF", borderRadius: 10 }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 500 }}>{o.oilName}</div>
-                    {oil && <div style={{ fontSize: 11, color: "#8B6914", marginTop: 1 }}>SAP {lyeType === "naoh" ? oil.sap_naoh.toFixed(4) : oil.sap_koh.toFixed(4)} · lye contrib: {lyeContrib.toFixed(2)}g</div>}
+                    {oil && <div style={{ fontSize: 11, color: "#5C3D1A", marginTop: 1 }}>SAP {lyeType === "naoh" ? oil.sap_naoh.toFixed(4) : oil.sap_koh.toFixed(4)} · lye contrib: {lyeContrib.toFixed(2)}g</div>}
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 11, color: "#8B6914", width: 36, textAlign: "right" }}>{pct}%</span>
+                    <span style={{ fontSize: 11, color: "#5C3D1A", width: 36, textAlign: "right" }}>{pct}%</span>
                     <input type="number" value={o.amount} min="0" step="10"
                       onChange={e => updateAmount(idx, e.target.value)}
-                      style={{ width: 80, background: "#FAF6ED", border: "1px solid #E8D5B4", borderRadius: 7, padding: "6px 8px", fontSize: 14, fontFamily: "'JetBrains Mono'", textAlign: "right", outline: "none" }} />
-                    <span style={{ fontSize: 12, color: "#8B6914" }}>g</span>
+                      style={{ width: 80, background: "#FFFCF7", border: "1px solid #E8C48A", borderRadius: 7, padding: "6px 8px", fontSize: 14, fontFamily: "'JetBrains Mono'", textAlign: "right", outline: "none" }} />
+                    <span style={{ fontSize: 12, color: "#5C3D1A" }}>g</span>
                     <button onClick={() => removeOil(idx)} style={{ background: "none", border: "none", cursor: "pointer", color: "#B5603C", fontSize: 18, lineHeight: 1, padding: "0 2px" }}>×</button>
                   </div>
                 </div>
@@ -155,18 +155,18 @@ export default function LyeCalculator() {
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search oils to add…"
                 style={{ ...S.input, marginBottom: search ? 8 : 0 }} />
               {search && (
-                <div style={{ background: "white", border: "1px solid #E8D5B4", borderRadius: 10, maxHeight: 200, overflowY: "auto" }}>
+                <div style={{ background: "white", border: "1px solid #E8C48A", borderRadius: 10, maxHeight: 200, overflowY: "auto" }}>
                   {filteredLibrary.filter(o => !currentOilNames.has(o.name)).slice(0, 8).map(o => (
                     <div key={o.name} onClick={() => addOil(o.name)}
-                      style={{ padding: "9px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between", borderBottom: "1px solid #F3EAD6", fontSize: 14 }}
-                      onMouseEnter={e => e.currentTarget.style.background = "#F3EAD6"}
+                      style={{ padding: "9px 14px", cursor: "pointer", display: "flex", justifyContent: "space-between", borderBottom: "1px solid #FFF0DC", fontSize: 14 }}
+                      onMouseEnter={e => e.currentTarget.style.background = "#FFF0DC"}
                       onMouseLeave={e => e.currentTarget.style.background = "white"}>
                       <span>{o.name} {o.fromDB && <span style={{ fontSize: 10, color: "#6D9B58" }}>● DB</span>}</span>
-                      <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 12, color: "#8B6914" }}>{lyeType === "naoh" ? o.sap_naoh.toFixed(4) : o.sap_koh.toFixed(4)}</span>
+                      <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 12, color: "#5C3D1A" }}>{lyeType === "naoh" ? o.sap_naoh.toFixed(4) : o.sap_koh.toFixed(4)}</span>
                     </div>
                   ))}
                   {filteredLibrary.filter(o => !currentOilNames.has(o.name)).length === 0 && (
-                    <div style={{ padding: "12px 14px", fontSize: 13, color: "#8B6914" }}>No oils found</div>
+                    <div style={{ padding: "12px 14px", fontSize: 13, color: "#5C3D1A" }}>No oils found</div>
                   )}
                 </div>
               )}
@@ -186,7 +186,7 @@ export default function LyeCalculator() {
               <label style={S.label}>Lye Type</label>
               <div style={{ display: "flex", gap: 8 }}>
                 {[["naoh", "NaOH", "Bar soap"], ["koh", "KOH", "Liquid soap"]].map(([v, label, sub]) => (
-                  <button key={v} onClick={() => setLyeType(v)} style={{ flex: 1, padding: "10px 8px", borderRadius: 10, border: "2px solid", cursor: "pointer", textAlign: "center", borderColor: lyeType === v ? "#4A7FA8" : "#E8D5B4", background: lyeType === v ? "#4A7FA822" : "transparent", color: lyeType === v ? "#306080" : "#6B5010", fontFamily: "inherit" }}>
+                  <button key={v} onClick={() => setLyeType(v)} style={{ flex: 1, padding: "10px 8px", borderRadius: 10, border: "2px solid", cursor: "pointer", textAlign: "center", borderColor: lyeType === v ? "#0284C7" : "#E8C48A", background: lyeType === v ? "#E0F2FE" : "transparent", color: lyeType === v ? "#0369A1" : "#5C3D1A", fontFamily: "inherit", fontWeight: lyeType === v ? 700 : 600 }}>
                     <div style={{ fontWeight: 700, fontSize: 15 }}>{label}</div>
                     <div style={{ fontSize: 11, opacity: 0.7 }}>{sub}</div>
                   </button>
@@ -207,8 +207,8 @@ export default function LyeCalculator() {
                 Superfat: <strong style={{ fontFamily: "'JetBrains Mono'" }}>{superFat}%</strong>
                 <span style={{ fontWeight: 400, marginLeft: 8, opacity: 0.7 }}>{superFat <= 3 ? "full cleanse" : superFat <= 6 ? "balanced" : superFat <= 10 ? "conditioning" : "very rich"}</span>
               </label>
-              <input type="range" min="0" max="20" step="1" value={superFat} onChange={e => setSuperFat(Number(e.target.value))} style={{ width: "100%", accentColor: "#6B5010" }} />
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#8B6914", marginTop: 2 }}>
+              <input type="range" min="0" max="20" step="1" value={superFat} onChange={e => setSuperFat(Number(e.target.value))} style={{ width: "100%", accentColor: "#EA580C" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#5C3D1A", marginTop: 2 }}>
                 <span>0% (max clean)</span><span>20% (max moisture)</span>
               </div>
             </div>
@@ -218,8 +218,8 @@ export default function LyeCalculator() {
               <label style={S.label}>
                 Water % of oils: <strong style={{ fontFamily: "'JetBrains Mono'" }}>{waterPct}%</strong>
               </label>
-              <input type="range" min="25" max="50" step="1" value={waterPct} onChange={e => setWaterPct(Number(e.target.value))} style={{ width: "100%", accentColor: "#6B5010" }} />
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#8B6914", marginTop: 2 }}>
+              <input type="range" min="25" max="50" step="1" value={waterPct} onChange={e => setWaterPct(Number(e.target.value))} style={{ width: "100%", accentColor: "#EA580C" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#5C3D1A", marginTop: 2 }}>
                 <span>25% (water discount)</span><span>50% (full water)</span>
               </div>
             </div>
@@ -227,15 +227,15 @@ export default function LyeCalculator() {
 
           {/* Results */}
           {results ? (
-            <div style={{ background: "#2E2208", borderRadius: 16, padding: 24 }}>
-              <h3 style={{ fontSize: 18, fontFamily: "'Playfair Display'", color: "#FAF6ED", marginBottom: 20 }}>Results</h3>
+            <div style={{ background: "#1A1410", borderRadius: 16, padding: 24 }}>
+              <h3 style={{ fontSize: 18, fontFamily: "'Playfair Display'", color: "#FFFCF7", marginBottom: 20 }}>Results</h3>
 
               {[
                 { label: lyeType === "naoh" ? "NaOH (Lye)" : `KOH (${kohPurity}% pure)`, value: `${results.lyeNeeded.toFixed(2)} g`, accent: "#6B9DC2" },
                 { label: "Distilled Water", value: `${results.waterAmount.toFixed(2)} g`, accent: "#6B9DC2" },
                 { label: "Lye Concentration", value: `${results.lyeConc.toFixed(1)}%`, accent: results.lyeConc > 40 ? "#C97B5A" : results.lyeConc < 28 ? "#6B9DC2" : "#8FAF7E" },
-                { label: "Total Oil Weight", value: `${totalOil.toFixed(1)} g`, accent: "#8B6914" },
-                { label: "Total Batch Weight", value: `${results.totalBatch.toFixed(1)} g`, accent: "#FAF6ED" },
+                { label: "Total Oil Weight", value: `${totalOil.toFixed(1)} g`, accent: "#5C3D1A" },
+                { label: "Total Batch Weight", value: `${results.totalBatch.toFixed(1)} g`, accent: "#FFFCF7" },
               ].map(row => (
                 <div key={row.label} style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: "1px solid rgba(250,246,237,0.1)" }}>
                   <span style={{ fontSize: 13, color: "rgba(250,246,237,0.6)" }}>{row.label}</span>
@@ -255,7 +255,7 @@ export default function LyeCalculator() {
               </div>
             </div>
           ) : (
-            <div style={{ background: "#F3EAD6", borderRadius: 16, padding: 24, textAlign: "center", color: "#8B6914", fontSize: 14 }}>
+            <div style={{ background: "#FFF0DC", borderRadius: 16, padding: 24, textAlign: "center", color: "#5C3D1A", fontSize: 14 }}>
               Add oils above to see lye calculations
             </div>
           )}
@@ -283,8 +283,8 @@ function QualityBar({ label, value, min, max }) {
 }
 
 const S = {
-  card: { background: "rgba(255,255,255,0.85)", borderRadius: 16, border: "1px solid #E8D5B4", padding: 24 },
+  card: { background: "#FFFFFF", borderRadius: 16, border: "1px solid #E8C48A", padding: 24 },
   sectionTitle: { fontSize: 18, fontFamily: "'Playfair Display'", marginBottom: 16 },
-  label: { display: "block", fontSize: 13, fontWeight: 500, color: "#6B5010", marginBottom: 6 },
-  input: { width: "100%", background: "#FDFBF7", border: "1px solid #E8D5B4", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#2E2208", outline: "none", fontFamily: "inherit" },
+  label: { display: "block", fontSize: 13, fontWeight: 500, color: "#C2410C", marginBottom: 6 },
+  input: { width: "100%", background: "#FFFFFF", border: "1px solid #E8C48A", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#1A1410", outline: "none", fontFamily: "inherit" },
 };

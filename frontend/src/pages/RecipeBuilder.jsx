@@ -192,7 +192,7 @@ export default function RecipeBuilder() {
             <h3 style={styles.sectionTitle}>Cost Summary</h3>
             <div style={styles.costRow}><span>Total ingredients</span><strong>{totalWeight.toFixed(1)}{form.yield_unit}</strong></div>
             <div style={styles.costRow}><span>Total batch cost</span><strong>${totalCost.toFixed(2)}</strong></div>
-            <div style={styles.costRow}><span>Cost per unit</span><strong style={{ color: "#4E7A3C" }}>${costPerUnit ? costPerUnit.toFixed(2) : "—"}</strong></div>
+            <div style={styles.costRow}><span>Cost per unit</span><strong style={{ color: "#16A34A" }}>${costPerUnit ? costPerUnit.toFixed(2) : "—"}</strong></div>
             <div style={styles.costRow}><span>Suggested retail (3×)</span><strong>${costPerUnit ? (costPerUnit * 3).toFixed(2) : "—"}</strong></div>
           </div>
         </div>
@@ -233,7 +233,7 @@ export default function RecipeBuilder() {
                       <div key={globalIdx} style={styles.ingredientRow}>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 14, fontWeight: 500 }}>{ri.ingredient_name}</div>
-                          {ri.inci_name && <div style={{ fontSize: 11, color: "#8B6914", marginTop: 1 }}>{ri.inci_name}</div>}
+                          {ri.inci_name && <div style={{ fontSize: 11, color: "#5C3D1A", marginTop: 1 }}>{ri.inci_name}</div>}
                         </div>
                         <span style={styles.pct}>{pct}%</span>
                         <input type="number" value={ri.amount} min="0" step="0.1"
@@ -256,7 +256,7 @@ export default function RecipeBuilder() {
             })}
 
             {ingredients.length === 0 && (
-              <div style={{ textAlign: "center", padding: "40px 20px", color: "#8B6914", fontSize: 14 }}>
+              <div style={{ textAlign: "center", padding: "40px 20px", color: "#5C3D1A", fontSize: 14 }}>
                 No ingredients yet. Click "Add Ingredient" to get started.
               </div>
             )}
@@ -279,15 +279,15 @@ export default function RecipeBuilder() {
               {filteredIngredients.map(ing => (
                 <div key={ing.id} onClick={() => addIngredient(ing, activePhase)}
                   style={styles.ingPickerRow}
-                  onMouseEnter={e => e.currentTarget.style.background = "#F3EAD6"}
-                  onMouseLeave={e => e.currentTarget.style.background = "#FDFBF7"}>
+                  onMouseEnter={e => e.currentTarget.style.background = "#FFF0DC"}
+                  onMouseLeave={e => e.currentTarget.style.background = "#FFFFFF"}>
                   <div>
                     <div style={{ fontSize: 14, fontWeight: 500 }}>{ing.name}</div>
-                    {ing.inci_name && <div style={{ fontSize: 11, color: "#8B6914" }}>{ing.inci_name}</div>}
+                    {ing.inci_name && <div style={{ fontSize: 11, color: "#5C3D1A" }}>{ing.inci_name}</div>}
                   </div>
-                  <div style={{ textAlign: "right", fontSize: 12, color: "#6B5010" }}>
+                  <div style={{ textAlign: "right", fontSize: 12, color: "#C2410C" }}>
                     {ing.cost_per_unit && <div>${ing.cost_per_unit.toFixed(4)}/{ing.unit}</div>}
-                    <div style={{ color: ing.stock_on_hand < 100 ? "#B5603C" : "#6D9B58", fontWeight: 600 }}>{ing.stock_on_hand?.toLocaleString()}{ing.unit} in stock</div>
+                    <div style={{ color: ing.stock_on_hand < 100 ? "#EA580C" : "#16A34A", fontWeight: 700 }}>{ing.stock_on_hand?.toLocaleString()}{ing.unit} in stock</div>
                   </div>
                 </div>
               ))}
@@ -302,7 +302,7 @@ export default function RecipeBuilder() {
 function Field({ label, children }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#6B5010", marginBottom: 4 }}>{label}</label>
+      <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#C2410C", marginBottom: 4 }}>{label}</label>
       {children}
     </div>
   );
@@ -310,29 +310,29 @@ function Field({ label, children }) {
 
 const styles = {
   page: { padding: "32px 40px", maxWidth: 1200, margin: "0 auto" },
-  loading: { padding: 40, color: "#8B6914" },
+  loading: { padding: 40, color: "#5C3D1A" },
   header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 28 },
   title: { fontSize: 28, fontFamily: "'Playfair Display'" },
-  sub: { fontSize: 13, color: "#8B6914", marginTop: 4 },
+  sub: { fontSize: 13, color: "#5C3D1A", marginTop: 4 },
   grid: { display: "grid", gridTemplateColumns: "380px 1fr", gap: 20 },
-  card: { background: "rgba(255,255,255,0.85)", borderRadius: 16, border: "1px solid #E8D5B4", padding: 24 },
+  card: { background: "#FFFFFF", borderRadius: 16, border: "1px solid #E8C48A", padding: 24 },
   sectionTitle: { fontSize: 17, fontFamily: "'Playfair Display'", marginBottom: 16 },
-  input: { width: "100%", background: "#FDFBF7", border: "1px solid #E8D5B4", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#2E2208", outline: "none", fontFamily: "inherit" },
-  btnPrimary: { background: "#6B5010", color: "#FDFBF7", border: "none", borderRadius: 8, padding: "9px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" },
-  btnSecondary: { background: "#F3EAD6", color: "#4A380C", border: "1px solid #E8D5B4", borderRadius: 8, padding: "9px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" },
-  costRow: { display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #F3EAD6", fontSize: 14, color: "#4A380C" },
-  phaseHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#8B6914", marginBottom: 8, paddingBottom: 4, borderBottom: "1px solid #F3EAD6" },
-  phaseAddBtn: { background: "none", border: "none", cursor: "pointer", color: "#6D9B58", fontSize: 12, fontWeight: 600, fontFamily: "inherit" },
-  emptyPhase: { padding: "12px 0", fontSize: 13, color: "#8B6914", cursor: "pointer", opacity: 0.6, fontStyle: "italic" },
-  ingredientRow: { display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: "#FDFBF7", borderRadius: 8, marginBottom: 4 },
-  pct: { fontSize: 11, color: "#8B6914", width: 36, textAlign: "right", flexShrink: 0 },
-  amountInput: { width: 80, background: "#FAF6ED", border: "1px solid #E8D5B4", borderRadius: 6, padding: "4px 8px", fontSize: 13, fontFamily: "'JetBrains Mono'", textAlign: "right", outline: "none" },
-  unitSelect: { width: 54, background: "#FAF6ED", border: "1px solid #E8D5B4", borderRadius: 6, padding: "4px 4px", fontSize: 12, outline: "none" },
-  lineCost: { fontSize: 12, color: "#6D9B58", width: 44, textAlign: "right", flexShrink: 0 },
-  iconBtn: { background: "none", border: "none", cursor: "pointer", color: "#8B6914", fontSize: 16, lineHeight: 1, padding: "2px 4px" },
-  overlay: { position: "fixed", inset: 0, background: "rgba(46,34,8,0.4)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" },
-  modal: { background: "#FAF6ED", borderRadius: 20, border: "1px solid #E8D5B4", width: 480, maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(46,34,8,0.2)" },
-  modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 12px", borderBottom: "1px solid #E8D5B4" },
-  closeBtn: { background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "#8B6914", lineHeight: 1 },
-  ingPickerRow: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 8, cursor: "pointer", marginBottom: 4, background: "#FDFBF7", transition: "background 0.1s" },
+  input: { width: "100%", background: "#FFFFFF", border: "1px solid #E8C48A", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#1A1410", outline: "none", fontFamily: "inherit" },
+  btnPrimary: { background: "#EA580C", color: "#FFFFFF", border: "none", borderRadius: 8, padding: "9px 18px", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 12px rgba(234, 88, 12, 0.4)" },
+  btnSecondary: { background: "#FFF0DC", color: "#3D2914", border: "1px solid #E8C48A", borderRadius: 8, padding: "9px 18px", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" },
+  costRow: { display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: "1px solid #FFF0DC", fontSize: 14, color: "#3D2914" },
+  phaseHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#5C3D1A", marginBottom: 8, paddingBottom: 4, borderBottom: "1px solid #FFF0DC" },
+  phaseAddBtn: { background: "none", border: "none", cursor: "pointer", color: "#16A34A", fontSize: 12, fontWeight: 700, fontFamily: "inherit" },
+  emptyPhase: { padding: "12px 0", fontSize: 13, color: "#5C3D1A", cursor: "pointer", opacity: 0.6, fontStyle: "italic" },
+  ingredientRow: { display: "flex", alignItems: "center", gap: 8, padding: "8px 10px", background: "#FFFFFF", borderRadius: 8, marginBottom: 4 },
+  pct: { fontSize: 11, color: "#5C3D1A", width: 36, textAlign: "right", flexShrink: 0 },
+  amountInput: { width: 80, background: "#FFFCF7", border: "1px solid #E8C48A", borderRadius: 6, padding: "4px 8px", fontSize: 13, fontFamily: "'JetBrains Mono'", textAlign: "right", outline: "none" },
+  unitSelect: { width: 54, background: "#FFFCF7", border: "1px solid #E8C48A", borderRadius: 6, padding: "4px 4px", fontSize: 12, outline: "none" },
+  lineCost: { fontSize: 12, color: "#16A34A", width: 44, textAlign: "right", flexShrink: 0 },
+  iconBtn: { background: "none", border: "none", cursor: "pointer", color: "#5C3D1A", fontSize: 16, lineHeight: 1, padding: "2px 4px" },
+  overlay: { position: "fixed", inset: 0, background: "rgba(26,20,16,0.55)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" },
+  modal: { background: "#FFFCF7", borderRadius: 20, border: "1px solid #E8C48A", width: 480, maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(26,20,16,0.28)" },
+  modalHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 20px 12px", borderBottom: "1px solid #E8C48A" },
+  closeBtn: { background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "#5C3D1A", lineHeight: 1 },
+  ingPickerRow: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 8, cursor: "pointer", marginBottom: 4, background: "#FFFFFF", transition: "background 0.1s" },
 };

@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { useAuthStore } from "./store/authStore";
@@ -14,6 +15,22 @@ import FragranceCalculator from "./pages/FragranceCalculator";
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
 });
+
+const UI = {
+  page: "#FFFCF7",
+  card: "#FFFFFF",
+  border: "#E8C48A",
+  ink: "#1A1410",
+  muted: "#5C3D1A",
+  accent: "#EA580C",
+  accentDark: "#C2410C",
+  sidebar: "#7C2D12",
+  sidebarActive: "rgba(255, 252, 247, 0.22)",
+  sidebarText: "#FFFAF5",
+  sidebarTextMuted: "rgba(255, 250, 245, 0.78)",
+  sidebarTextDim: "rgba(255, 248, 240, 0.55)",
+  sageDot: "#4ADE80",
+};
 
 // ─── Auth Guard ───────────────────────────────────────────────────────────────
 
@@ -41,12 +58,14 @@ function Sidebar() {
 
   return (
     <aside style={{
-      width: 220, background: "#2E2208", display: "flex", flexDirection: "column",
+      width: 220, background: `linear-gradient(180deg, ${UI.sidebar} 0%, #5C2410 100%)`,
+      display: "flex", flexDirection: "column",
       position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 100,
+      boxShadow: "4px 0 24px rgba(124, 45, 18, 0.35)",
     }}>
       <div style={{ padding: "28px 20px 24px" }}>
-        <div style={{ fontFamily: "'Playfair Display'", fontSize: 22, color: "#FDFBF7", letterSpacing: "-0.5px" }}>BatchCraft</div>
-        <div style={{ fontSize: 11, color: "rgba(250,246,237,0.4)", marginTop: 2, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+        <div style={{ fontFamily: "'Playfair Display'", fontSize: 22, color: UI.sidebarText, letterSpacing: "-0.5px", fontWeight: 700 }}>BatchCraft</div>
+        <div style={{ fontSize: 11, color: UI.sidebarTextDim, marginTop: 4, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600 }}>
           {tenant?.name || "Loading…"}
         </div>
       </div>
@@ -57,31 +76,32 @@ function Sidebar() {
           return (
             <NavLink key={to} to={to} style={{ textDecoration: "none" }}>
               <div style={{
-                display: "flex", alignItems: "center", gap: 10, padding: "10px 12px",
-                borderRadius: 10, marginBottom: 2, cursor: "pointer",
-                background: active ? "rgba(250,246,237,0.12)" : "transparent",
-                color: active ? "#FAF6ED" : "rgba(250,246,237,0.55)",
-                fontSize: 14, fontWeight: active ? 600 : 400,
+                display: "flex", alignItems: "center", gap: 10, padding: "11px 14px",
+                borderRadius: 10, marginBottom: 3, cursor: "pointer",
+                background: active ? UI.sidebarActive : "transparent",
+                color: active ? UI.sidebarText : UI.sidebarTextMuted,
+                fontSize: 14, fontWeight: active ? 700 : 500,
                 transition: "all 0.15s",
+                border: active ? "1px solid rgba(255,255,255,0.12)" : "1px solid transparent",
               }}>
-                <span style={{ fontSize: 16 }}>{icon}</span>
+                <span style={{ fontSize: 17 }}>{icon}</span>
                 {label}
-                {active && <div style={{ marginLeft: "auto", width: 4, height: 4, borderRadius: 2, background: "#8FAF7E" }} />}
+                {active && <div style={{ marginLeft: "auto", width: 5, height: 5, borderRadius: 3, background: UI.sageDot, boxShadow: "0 0 8px #4ADE80" }} />}
               </div>
             </NavLink>
           );
         })}
       </nav>
 
-      <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(250,246,237,0.1)" }}>
-        <div style={{ fontSize: 12, color: "rgba(250,246,237,0.4)" }}>Logged in as</div>
-        <div style={{ fontSize: 14, color: "rgba(250,246,237,0.8)", fontWeight: 500, marginTop: 2 }}>
+      <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(255,255,255,0.18)" }}>
+        <div style={{ fontSize: 12, color: UI.sidebarTextDim, fontWeight: 600 }}>Logged in as</div>
+        <div style={{ fontSize: 14, color: UI.sidebarText, fontWeight: 600, marginTop: 4 }}>
           {user?.name} · {user?.role}
         </div>
         <button onClick={logout} style={{
-          marginTop: 10, background: "rgba(250,246,237,0.08)", border: "none",
-          borderRadius: 6, padding: "5px 10px", fontSize: 12, color: "rgba(250,246,237,0.5)",
-          cursor: "pointer", width: "100%", textAlign: "left", fontFamily: "inherit",
+          marginTop: 12, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)",
+          borderRadius: 8, padding: "8px 12px", fontSize: 13, color: UI.sidebarTextMuted,
+          cursor: "pointer", width: "100%", textAlign: "left", fontFamily: "inherit", fontWeight: 600,
         }}>Sign out</button>
       </div>
     </aside>
@@ -94,7 +114,7 @@ function AppShell({ children }) {
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar />
-      <main style={{ marginLeft: 220, flex: 1, minHeight: "100vh", background: "#FAF6ED" }}>
+      <main style={{ marginLeft: 220, flex: 1, minHeight: "100vh", background: UI.page }}>
         {children}
       </main>
     </div>
@@ -132,10 +152,13 @@ function Login() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FAF6ED", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ width: 400, background: "rgba(255,255,255,0.9)", borderRadius: 20, border: "1px solid #E8D5B4", padding: 40, boxShadow: "0 8px 40px rgba(46,34,8,0.12)" }}>
-        <h1 style={{ fontFamily: "'Playfair Display'", fontSize: 28, marginBottom: 4, color: "#2E2208" }}>BatchCraft</h1>
-        <p style={{ fontSize: 14, color: "#8B6914", marginBottom: 28 }}>{mode === "login" ? "Sign in to your workshop" : "Create your workspace"}</p>
+    <div style={{ minHeight: "100vh", background: UI.page, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{
+        width: 400, background: UI.card, borderRadius: 20, border: `2px solid ${UI.border}`,
+        padding: 40, boxShadow: "0 12px 48px rgba(194, 65, 12, 0.15)",
+      }}>
+        <h1 style={{ fontFamily: "'Playfair Display'", fontSize: 30, marginBottom: 6, color: UI.ink, fontWeight: 700 }}>BatchCraft</h1>
+        <p style={{ fontSize: 15, color: UI.muted, marginBottom: 28, fontWeight: 500 }}>{mode === "login" ? "Sign in to your workshop" : "Create your workspace"}</p>
 
         {mode === "register" && (
           <>
@@ -149,14 +172,18 @@ function Login() {
           <Field label="Workspace (optional)"><input value={tenantSlug} onChange={e => setTenantSlug(e.target.value)} placeholder="your-business-name" style={inputStyle} /></Field>
         )}
 
-        {error && <div style={{ background: "#FFF0EB", border: "1px solid #C97B5A40", borderRadius: 8, padding: "8px 12px", fontSize: 13, color: "#8F4A2C", marginBottom: 16 }}>{error}</div>}
+        {error && <div style={{ background: "#FFF1EB", border: "2px solid #FDBA74", borderRadius: 10, padding: "10px 14px", fontSize: 14, color: "#9A3412", marginBottom: 16, fontWeight: 600 }}>{error}</div>}
 
-        <button onClick={handleSubmit} disabled={loading} style={{ width: "100%", background: "#6B5010", color: "#FDFBF7", border: "none", borderRadius: 10, padding: "12px", fontSize: 15, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginBottom: 16 }}>
+        <button onClick={handleSubmit} disabled={loading} style={{
+          width: "100%", background: UI.accent, color: "#FFFFFF", border: "none", borderRadius: 12, padding: "14px",
+          fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginBottom: 16,
+          boxShadow: "0 4px 14px rgba(234, 88, 12, 0.45)",
+        }}>
           {loading ? "…" : mode === "login" ? "Sign In" : "Create Account"}
         </button>
-        <p style={{ fontSize: 13, color: "#8B6914", textAlign: "center" }}>
+        <p style={{ fontSize: 14, color: UI.muted, textAlign: "center", fontWeight: 500 }}>
           {mode === "login" ? "New to BatchCraft? " : "Already have an account? "}
-          <button onClick={() => setMode(m => m === "login" ? "register" : "login")} style={{ background: "none", border: "none", color: "#6B5010", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+          <button onClick={() => setMode(m => m === "login" ? "register" : "login")} style={{ background: "none", border: "none", color: UI.accentDark, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", textDecoration: "underline" }}>
             {mode === "login" ? "Create account" : "Sign in"}
           </button>
         </p>
@@ -168,32 +195,39 @@ function Login() {
 function Field({ label, children }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <label style={{ display: "block", fontSize: 13, fontWeight: 500, color: "#6B5010", marginBottom: 4 }}>{label}</label>
+      <label style={{ display: "block", fontSize: 13, fontWeight: 700, color: UI.muted, marginBottom: 6 }}>{label}</label>
       {children}
     </div>
   );
 }
 
-const inputStyle = { width: "100%", background: "#FDFBF7", border: "1px solid #E8D5B4", borderRadius: 8, padding: "9px 12px", fontSize: 14, color: "#2E2208", outline: "none", fontFamily: "inherit" };
+const inputStyle = {
+  width: "100%", background: "#FFFFFF", border: `2px solid ${UI.border}`, borderRadius: 10, padding: "11px 14px",
+  fontSize: 15, color: UI.ink, outline: "none", fontFamily: "inherit", fontWeight: 500,
+};
 
 // ─── Placeholder pages (replace with full implementations) ────────────────────
 
 const Placeholder = ({ title }) => (
-  <div style={{ padding: "40px", color: "#8B6914", fontFamily: "'Playfair Display'", fontSize: 24 }}>
-    {title} <span style={{ fontSize: 14, fontFamily: "'DM Sans'" }}>(coming soon)</span>
+  <div style={{ padding: "40px", color: UI.muted, fontFamily: "'Playfair Display'", fontSize: 26, fontWeight: 600 }}>
+    {title} <span style={{ fontSize: 15, fontFamily: "'DM Sans'", fontWeight: 500, color: UI.accent }}>(coming soon)</span>
   </div>
 );
 
 // ─── App ──────────────────────────────────────────────────────────────────────
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Toaster position="top-right" toastOptions={{ style: { fontFamily: "'DM Sans'", fontSize: 14 } }} />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            style: { fontFamily: "'DM Sans'", fontSize: 14, fontWeight: 600, background: "#1A1410", color: "#FFFAF5" },
+            success: { iconTheme: { primary: "#4ADE80", secondary: "#1A1410" } },
+            error: { iconTheme: { primary: "#FB923C", secondary: "#1A1410" } },
+          }}
+        />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/*" element={

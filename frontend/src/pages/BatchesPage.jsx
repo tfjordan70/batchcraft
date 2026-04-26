@@ -4,10 +4,10 @@ import { useBatches, useCreateBatch, useRecipes, useBatchTraceability } from "..
 import { exportBatches, exportBatchTraceability } from "../utils/exports";
 
 const STATUS = {
-  planned:     { label: "Planned",     bg: "#E8D5B4",   text: "#4A380C" },
-  in_progress: { label: "In Progress", bg: "#6B9DC222", text: "#306080" },
-  complete:    { label: "Complete",    bg: "#8FAF7E22", text: "#4E7A3C" },
-  failed:      { label: "Failed",      bg: "#C97B5A22", text: "#8F4A2C" },
+  planned:     { label: "Planned",     bg: "#FDE68A",   text: "#92400E" },
+  in_progress: { label: "In Progress", bg: "#7DD3FC55", text: "#0369A1" },
+  complete:    { label: "Complete",    bg: "#86EFAC55", text: "#15803D" },
+  failed:      { label: "Failed",      bg: "#FED7AA",   text: "#C2410C" },
 };
 
 export default function BatchesPage() {
@@ -49,9 +49,9 @@ export default function BatchesPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 24 }}>
         {Object.entries(STATUS).map(([key, cfg]) => (
           <div key={key} onClick={() => setStatusFilter(statusFilter === key ? "all" : key)}
-            style={{ padding: "14px 18px", background: statusFilter === key ? cfg.bg : "rgba(255,255,255,0.8)", border: `1px solid ${statusFilter === key ? cfg.text + "40" : "#E8D5B4"}`, borderRadius: 12, cursor: "pointer", transition: "all 0.15s" }}>
+            style={{ padding: "14px 18px", background: statusFilter === key ? cfg.bg : "#FFFFFF", border: `1px solid ${statusFilter === key ? cfg.text + "40" : "#E8C48A"}`, borderRadius: 12, cursor: "pointer", transition: "all 0.15s" }}>
             <div style={{ fontSize: 24, fontFamily: "'Playfair Display'", fontWeight: 700, color: cfg.text }}>{counts[key] || 0}</div>
-            <div style={{ fontSize: 12, color: "#8B6914", marginTop: 2 }}>{cfg.label}</div>
+            <div style={{ fontSize: 12, color: "#5C3D1A", marginTop: 2 }}>{cfg.label}</div>
           </div>
         ))}
       </div>
@@ -71,44 +71,44 @@ export default function BatchesPage() {
       <div style={S.tableWrap}>
         <table style={S.table}>
           <thead>
-            <tr style={{ background: "#F3EAD6" }}>
+            <tr style={{ background: "#FFF0DC" }}>
               {["Batch #", "Recipe", "Status", "Scale", "Yield", "Units", "Date", "Actions"].map(h => <TH key={h}>{h}</TH>)}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={8} style={{ padding: "50px", textAlign: "center", color: "#8B6914", fontSize: 14 }}>
+              <tr><td colSpan={8} style={{ padding: "50px", textAlign: "center", color: "#5C3D1A", fontSize: 14 }}>
                 {batches.length === 0 ? "No batches yet — log your first production run" : "No batches match your filter"}
               </td></tr>
             )}
             {filtered.map(b => {
               const st = STATUS[b.status] || STATUS.planned;
               return (
-                <tr key={b.id} style={{ borderTop: "1px solid #F3EAD6", transition: "background 0.1s" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#FDFBF7"}
+                <tr key={b.id} style={{ borderTop: "1px solid #FFF0DC", transition: "background 0.1s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#FFFFFF"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <td style={{ padding: "13px 16px" }}>
-                    <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, fontWeight: 600, color: "#4A380C" }}>{b.batch_number}</span>
+                    <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 13, fontWeight: 600, color: "#3D2914" }}>{b.batch_number}</span>
                   </td>
                   <td style={{ padding: "13px 16px", fontSize: 14, fontWeight: 500, maxWidth: 200 }}>
-                    <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.recipe_name || <span style={{ color: "#8B6914", fontStyle: "italic" }}>No recipe</span>}</div>
+                    <div style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{b.recipe_name || <span style={{ color: "#5C3D1A", fontStyle: "italic" }}>No recipe</span>}</div>
                   </td>
                   <td style={{ padding: "13px 16px" }}>
                     <span style={{ display: "inline-flex", padding: "3px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: st.bg, color: st.text }}>
                       {st.label}
                     </span>
                   </td>
-                  <td style={{ padding: "13px 16px", fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#6B5010" }}>
+                  <td style={{ padding: "13px 16px", fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#C2410C" }}>
                     {b.scale_factor ? `${Number(b.scale_factor).toFixed(2)}×` : "1×"}
                   </td>
-                  <td style={{ padding: "13px 16px", fontSize: 13, color: "#4A380C" }}>
-                    {b.yield_actual ? <span style={{ fontFamily: "'JetBrains Mono'" }}>{Number(b.yield_actual).toFixed(0)}{b.yield_unit}</span> : <span style={{ color: "#8B691460" }}>—</span>}
+                  <td style={{ padding: "13px 16px", fontSize: 13, color: "#3D2914" }}>
+                    {b.yield_actual ? <span style={{ fontFamily: "'JetBrains Mono'" }}>{Number(b.yield_actual).toFixed(0)}{b.yield_unit}</span> : <span style={{ color: "#5C3D1A60" }}>—</span>}
                   </td>
-                  <td style={{ padding: "13px 16px", fontSize: 13, color: "#4A380C" }}>
-                    {b.unit_count ?? <span style={{ color: "#8B691460" }}>—</span>}
+                  <td style={{ padding: "13px 16px", fontSize: 13, color: "#3D2914" }}>
+                    {b.unit_count ?? <span style={{ color: "#5C3D1A60" }}>—</span>}
                   </td>
-                  <td style={{ padding: "13px 16px", fontSize: 13, color: "#8B6914" }}>
-                    {b.made_at ? new Date(b.made_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : <span style={{ color: "#8B691460" }}>—</span>}
+                  <td style={{ padding: "13px 16px", fontSize: 13, color: "#5C3D1A" }}>
+                    {b.made_at ? new Date(b.made_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : <span style={{ color: "#5C3D1A60" }}>—</span>}
                   </td>
                   <td style={{ padding: "13px 16px" }}>
                     <div style={{ display: "flex", gap: 6 }}>
@@ -157,11 +157,11 @@ function NewBatchModal({ recipes, onClose, onCreated }) {
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(46,34,8,0.4)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ background: "#FAF6ED", borderRadius: 20, border: "1px solid #E8D5B4", width: "100%", maxWidth: 520, boxShadow: "0 20px 60px rgba(46,34,8,0.2)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: "1px solid #E8D5B4" }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(26,20,16,0.55)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: "#FFFCF7", borderRadius: 20, border: "1px solid #E8C48A", width: "100%", maxWidth: 520, boxShadow: "0 20px 60px rgba(26,20,16,0.28)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: "1px solid #E8C48A" }}>
           <h3 style={{ fontSize: 18, fontFamily: "'Playfair Display'" }}>Start New Batch</h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "#8B6914" }}>×</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "#5C3D1A" }}>×</button>
         </div>
         <div style={{ padding: 24 }}>
           <Field label="Recipe">
@@ -172,7 +172,7 @@ function NewBatchModal({ recipes, onClose, onCreated }) {
           </Field>
 
           {selectedRecipe && (
-            <div style={{ padding: "10px 14px", background: "#F3EAD6", borderRadius: 10, marginBottom: 14, fontSize: 13, color: "#4A380C" }}>
+            <div style={{ padding: "10px 14px", background: "#FFF0DC", borderRadius: 10, marginBottom: 14, fontSize: 13, color: "#3D2914" }}>
               Base yield: {selectedRecipe.yield_amount}{selectedRecipe.yield_unit} · {selectedRecipe.yield_count} units
             </div>
           )}
@@ -220,23 +220,23 @@ function TraceabilityModal({ batch, onClose }) {
   const { data: trace, isLoading } = useBatchTraceability(batch.id);
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(46,34,8,0.4)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ background: "#FAF6ED", borderRadius: 20, border: "1px solid #E8D5B4", width: "100%", maxWidth: 620, maxHeight: "85vh", overflow: "auto", boxShadow: "0 20px 60px rgba(46,34,8,0.2)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: "1px solid #E8D5B4", position: "sticky", top: 0, background: "#FAF6ED" }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(26,20,16,0.55)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: "#FFFCF7", borderRadius: 20, border: "1px solid #E8C48A", width: "100%", maxWidth: 620, maxHeight: "85vh", overflow: "auto", boxShadow: "0 20px 60px rgba(26,20,16,0.28)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: "1px solid #E8C48A", position: "sticky", top: 0, background: "#FFFCF7" }}>
           <div>
             <h3 style={{ fontSize: 18, fontFamily: "'Playfair Display'" }}>Traceability Report</h3>
-            <p style={{ fontSize: 12, color: "#8B6914", marginTop: 2, fontFamily: "'JetBrains Mono'" }}>{batch.batch_number}</p>
+            <p style={{ fontSize: 12, color: "#5C3D1A", marginTop: 2, fontFamily: "'JetBrains Mono'" }}>{batch.batch_number}</p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
             {trace && <Btn small variant="secondary" onClick={() => exportBatchTraceability(batch, trace)}>↓ CSV</Btn>}
-            <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "#8B6914" }}>×</button>
+            <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "#5C3D1A" }}>×</button>
           </div>
         </div>
         <div style={{ padding: 24 }}>
           {isLoading ? <div style={S.loading}>Loading traceability data…</div> : trace ? (
             <>
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#8B6914", textTransform: "uppercase", marginBottom: 8 }}>Batch Info</div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#5C3D1A", textTransform: "uppercase", marginBottom: 8 }}>Batch Info</div>
                 <InfoRow label="Recipe" value={batch.recipe_name} />
                 <InfoRow label="Made" value={batch.made_at ? new Date(batch.made_at).toLocaleString() : "—"} />
                 <InfoRow label="Yield" value={batch.yield_actual ? `${batch.yield_actual} ${batch.yield_unit}` : "—"} />
@@ -245,30 +245,30 @@ function TraceabilityModal({ batch, onClose }) {
 
               {trace.recipe_snapshot && (
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#8B6914", textTransform: "uppercase", marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#5C3D1A", textTransform: "uppercase", marginBottom: 8 }}>
                     Recipe Snapshot (v{trace.recipe_snapshot.version})
                   </div>
-                  <div style={{ background: "#F3EAD6", borderRadius: 10, padding: 12, fontSize: 12, color: "#4A380C", fontFamily: "'JetBrains Mono'" }}>
+                  <div style={{ background: "#FFF0DC", borderRadius: 10, padding: 12, fontSize: 12, color: "#3D2914", fontFamily: "'JetBrains Mono'" }}>
                     Locked at time of batch — changes to the recipe after this date don't affect this record.
                   </div>
                 </div>
               )}
 
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#8B6914", textTransform: "uppercase", marginBottom: 8 }}>Ingredients Used</div>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", color: "#5C3D1A", textTransform: "uppercase", marginBottom: 8 }}>Ingredients Used</div>
                 {(trace.ingredients_used || []).map((bi, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: i % 2 === 0 ? "#FDFBF7" : "transparent", borderRadius: 8 }}>
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: i % 2 === 0 ? "#FFFFFF" : "transparent", borderRadius: 8 }}>
                     <div>
                       <div style={{ fontSize: 14, fontWeight: 500 }}>{bi.ingredient_name}</div>
-                      {bi.lot_number && <div style={{ fontSize: 11, color: "#8B6914", fontFamily: "'JetBrains Mono'", marginTop: 2 }}>Lot: {bi.lot_number}</div>}
+                      {bi.lot_number && <div style={{ fontSize: 11, color: "#5C3D1A", fontFamily: "'JetBrains Mono'", marginTop: 2 }}>Lot: {bi.lot_number}</div>}
                     </div>
                     <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 14, fontWeight: 600 }}>{Number(bi.amount_used).toFixed(2)} {bi.unit}</span>
                   </div>
                 ))}
-                {(trace.ingredients_used || []).length === 0 && <p style={{ color: "#8B6914", fontSize: 13 }}>No ingredient usage recorded for this batch.</p>}
+                {(trace.ingredients_used || []).length === 0 && <p style={{ color: "#5C3D1A", fontSize: 13 }}>No ingredient usage recorded for this batch.</p>}
               </div>
             </>
-          ) : <p style={{ color: "#8B6914" }}>No traceability data found.</p>}
+          ) : <p style={{ color: "#5C3D1A" }}>No traceability data found.</p>}
         </div>
       </div>
     </div>
@@ -279,8 +279,8 @@ function TraceabilityModal({ batch, onClose }) {
 
 function InfoRow({ label, value }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #F3EAD6", fontSize: 14 }}>
-      <span style={{ color: "#8B6914" }}>{label}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #FFF0DC", fontSize: 14 }}>
+      <span style={{ color: "#5C3D1A" }}>{label}</span>
       <strong>{value}</strong>
     </div>
   );
@@ -289,7 +289,7 @@ function InfoRow({ label, value }) {
 function Field({ label, children }) {
   return (
     <div style={{ marginBottom: 14 }}>
-      <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#6B5010", marginBottom: 4 }}>{label}</label>
+      <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#C2410C", marginBottom: 4 }}>{label}</label>
       {children}
     </div>
   );
@@ -298,25 +298,25 @@ function Field({ label, children }) {
 function Shell({ children }) { return <div style={{ padding: "32px 40px" }}>{children}</div>; }
 
 function TH({ children }) {
-  return <th style={{ padding: "11px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8B6914", fontFamily: "'DM Sans'", whiteSpace: "nowrap" }}>{children}</th>;
+  return <th style={{ padding: "11px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#5C3D1A", fontFamily: "'DM Sans'", whiteSpace: "nowrap" }}>{children}</th>;
 }
 
 function Chip({ label, active, onClick }) {
-  return <button onClick={onClick} style={{ padding: "5px 12px", borderRadius: 16, border: "1px solid", fontSize: 12, fontWeight: 500, cursor: "pointer", borderColor: active ? "#6B5010" : "#E8D5B4", background: active ? "#6B5010" : "transparent", color: active ? "#FDFBF7" : "#6B5010", fontFamily: "inherit" }}>{label}</button>;
+  return <button onClick={onClick} style={{ padding: "5px 12px", borderRadius: 16, border: "1px solid", fontSize: 12, fontWeight: 500, cursor: "pointer", borderColor: active ? "#C2410C" : "#E8C48A", background: active ? "#C2410C" : "transparent", color: active ? "#FFFFFF" : "#C2410C", fontFamily: "inherit" }}>{label}</button>;
 }
 
 function Btn({ children, onClick, variant = "primary", small, disabled }) {
   const base = { display: "inline-flex", alignItems: "center", gap: 5, borderRadius: 8, fontFamily: "'DM Sans'", fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer", border: "none", transition: "all 0.15s", fontSize: small ? 12 : 14, padding: small ? "6px 11px" : "9px 18px", opacity: disabled ? 0.6 : 1 };
-  const variants = { primary: { background: "#6B5010", color: "#FDFBF7" }, secondary: { background: "#F3EAD6", color: "#4A380C", border: "1px solid #E8D5B4" }, ghost: { background: "transparent", color: "#6B5010" } };
+  const variants = { primary: { background: "#EA580C", color: "#FFFFFF", boxShadow: "0 2px 12px rgba(234, 88, 12, 0.35)" }, secondary: { background: "#FFF0DC", color: "#3D2914", border: "2px solid #E8C48A" }, ghost: { background: "transparent", color: "#C2410C", fontWeight: 700 } };
   return <button onClick={onClick} disabled={disabled} style={{ ...base, ...variants[variant] }}>{children}</button>;
 }
 
 const S = {
   header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 },
   pageTitle: { fontSize: 28, fontFamily: "'Playfair Display'" },
-  pageSub: { fontSize: 14, color: "#8B6914", marginTop: 4 },
-  loading: { padding: 40, color: "#8B6914", fontSize: 14 },
-  tableWrap: { background: "rgba(255,255,255,0.85)", borderRadius: 16, border: "1px solid #E8D5B4", overflow: "hidden" },
+  pageSub: { fontSize: 14, color: "#5C3D1A", marginTop: 4 },
+  loading: { padding: 40, color: "#5C3D1A", fontSize: 14 },
+  tableWrap: { background: "#FFFFFF", borderRadius: 16, border: "1px solid #E8C48A", overflow: "hidden" },
   table: { width: "100%", borderCollapse: "collapse" },
-  input: { width: "100%", background: "#FDFBF7", border: "1px solid #E8D5B4", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#2E2208", outline: "none", fontFamily: "inherit" },
+  input: { width: "100%", background: "#FFFFFF", border: "1px solid #E8C48A", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#1A1410", outline: "none", fontFamily: "inherit" },
 };

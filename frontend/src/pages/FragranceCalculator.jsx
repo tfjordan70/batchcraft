@@ -132,7 +132,7 @@ export default function FragranceCalculator() {
     <div style={{ padding: "32px 40px" }}>
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 28, fontFamily: "'Playfair Display'" }}>Fragrance Calculator</h1>
-        <p style={{ color: "#8B6914", fontSize: 14, marginTop: 4 }}>IFRA-aware fragrance load calculator for any product type</p>
+        <p style={{ color: "#5C3D1A", fontSize: 14, marginTop: 4 }}>IFRA-aware fragrance load calculator for any product type</p>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 20, alignItems: "start" }}>
@@ -144,7 +144,7 @@ export default function FragranceCalculator() {
             <h3 style={S.sectionTitle}>Product Type</h3>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
               {PRODUCT_TYPES.map(pt => (
-                <button key={pt.id} onClick={() => handleProductChange(pt)} style={{ padding: "10px 8px", borderRadius: 10, border: "2px solid", cursor: "pointer", textAlign: "center", fontFamily: "inherit", transition: "all 0.15s", borderColor: productType.id === pt.id ? "#6B5010" : "#E8D5B4", background: productType.id === pt.id ? "#6B5010" : "transparent", color: productType.id === pt.id ? "#FDFBF7" : "#4A380C" }}>
+                <button key={pt.id} onClick={() => handleProductChange(pt)} style={{ padding: "10px 8px", borderRadius: 10, border: "2px solid", cursor: "pointer", textAlign: "center", fontFamily: "inherit", transition: "all 0.15s", borderColor: productType.id === pt.id ? "#C2410C" : "#E8C48A", background: productType.id === pt.id ? "#C2410C" : "transparent", color: productType.id === pt.id ? "#FFFFFF" : "#3D2914" }}>
                   <div style={{ fontSize: 20, marginBottom: 4 }}>{pt.icon}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, lineHeight: 1.2 }}>{pt.label}</div>
                 </button>
@@ -153,11 +153,11 @@ export default function FragranceCalculator() {
           </div>
 
           {/* Usage guidance */}
-          <div style={{ ...S.card, marginTop: 16, background: "#2E2208", color: "#FAF6ED" }}>
+          <div style={{ ...S.card, marginTop: 16, background: "#1A1410", color: "#FFFCF7" }}>
             <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
               <span style={{ fontSize: 28 }}>{productType.icon}</span>
               <div>
-                <h3 style={{ fontSize: 17, fontFamily: "'Playfair Display'", color: "#FAF6ED" }}>{productType.label}</h3>
+                <h3 style={{ fontSize: 17, fontFamily: "'Playfair Display'", color: "#FFFCF7" }}>{productType.label}</h3>
                 <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 4, background: "rgba(250,246,237,0.12)", color: "rgba(250,246,237,0.7)" }}>{productType.category.replace("_", " ").toUpperCase()}</span>
               </div>
             </div>
@@ -177,37 +177,37 @@ export default function FragranceCalculator() {
           {fragranceIngredients.length > 0 && (
             <div style={{ ...S.card, marginTop: 16 }}>
               <h3 style={S.sectionTitle}>Fragrance Blend Builder</h3>
-              <p style={{ fontSize: 13, color: "#8B6914", marginBottom: 16 }}>Track multiple FOs in your blend with individual usage rates.</p>
+              <p style={{ fontSize: 13, color: "#5C3D1A", marginBottom: 16 }}>Track multiple FOs in your blend with individual usage rates.</p>
 
               <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
                 <select value={selectedFO} onChange={e => setSelectedFO(e.target.value)} style={{ ...S.input, flex: 1 }}>
                   <option value="">— Select a fragrance from your inventory —</option>
                   {fragranceIngredients.map(i => <option key={i.id} value={i.id}>{i.name}</option>)}
                 </select>
-                <button onClick={addFO} disabled={!selectedFO} style={{ padding: "8px 16px", background: "#6B5010", color: "#FDFBF7", border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontWeight: 600, opacity: selectedFO ? 1 : 0.5 }}>Add</button>
+                <button onClick={addFO} disabled={!selectedFO} style={{ padding: "8px 16px", background: "#EA580C", color: "#FFFFFF", border: "none", borderRadius: 8, cursor: "pointer", fontFamily: "inherit", fontWeight: 700, opacity: selectedFO ? 1 : 0.5, boxShadow: "0 2px 10px rgba(234, 88, 12, 0.4)" }}>Add</button>
               </div>
 
               {foEntries.map((fo, idx) => {
                 const amt = batchWeight * fo.pct / 100;
                 const cost = fo.cost_per_unit ? fo.cost_per_unit * amt : null;
                 return (
-                  <div key={idx} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 12px", background: "#FDFBF7", borderRadius: 10, marginBottom: 8 }}>
+                  <div key={idx} style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 12px", background: "#FFFFFF", borderRadius: 10, marginBottom: 8 }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 14, fontWeight: 500 }}>{fo.name}</div>
                       {cost && <div style={{ fontSize: 11, color: "#6D9B58" }}>${cost.toFixed(2)} for this batch</div>}
                     </div>
                     <input type="number" value={fo.pct} step="0.1" min="0" max={productType.max_pct}
                       onChange={e => updateFO(idx, "pct", Number(e.target.value))}
-                      style={{ width: 64, background: "#FAF6ED", border: "1px solid #E8D5B4", borderRadius: 7, padding: "6px 8px", fontSize: 14, fontFamily: "'JetBrains Mono'", textAlign: "right", outline: "none" }} />
-                    <span style={{ fontSize: 12, color: "#8B6914" }}>%</span>
-                    <span style={{ fontSize: 13, fontFamily: "'JetBrains Mono'", color: "#4A380C", width: 60 }}>{amt.toFixed(2)}g</span>
+                      style={{ width: 64, background: "#FFFCF7", border: "1px solid #E8C48A", borderRadius: 7, padding: "6px 8px", fontSize: 14, fontFamily: "'JetBrains Mono'", textAlign: "right", outline: "none" }} />
+                    <span style={{ fontSize: 12, color: "#5C3D1A" }}>%</span>
+                    <span style={{ fontSize: 13, fontFamily: "'JetBrains Mono'", color: "#3D2914", width: 60 }}>{amt.toFixed(2)}g</span>
                     <button onClick={() => removeFO(idx)} style={{ background: "none", border: "none", cursor: "pointer", color: "#B5603C", fontSize: 18, lineHeight: 1 }}>×</button>
                   </div>
                 );
               })}
 
               {foEntries.length > 0 && (
-                <div style={{ padding: "12px 14px", background: "#F3EAD6", borderRadius: 10, fontSize: 13, color: "#4A380C", marginTop: 8 }}>
+                <div style={{ padding: "12px 14px", background: "#FFF0DC", borderRadius: 10, fontSize: 13, color: "#3D2914", marginTop: 8 }}>
                   Total FO cost: <strong>${totalFOCost.toFixed(2)}</strong> · Combined %: <strong>{foEntries.reduce((s, f) => s + f.pct, 0).toFixed(1)}%</strong>
                 </div>
               )}
@@ -228,13 +228,13 @@ export default function FragranceCalculator() {
 
             <div style={{ marginBottom: 16 }}>
               <label style={S.label}>
-                Fragrance load: <strong style={{ fontFamily: "'JetBrains Mono'", color: isOverMax ? "#B5603C" : "#4A380C" }}>{targetPct}%</strong>
-                <span style={{ fontWeight: 400, fontSize: 12, marginLeft: 6, color: "#8B6914" }}>(typical: {productType.typical_pct}%)</span>
+                Fragrance load: <strong style={{ fontFamily: "'JetBrains Mono'", color: isOverMax ? "#B5603C" : "#3D2914" }}>{targetPct}%</strong>
+                <span style={{ fontWeight: 400, fontSize: 12, marginLeft: 6, color: "#5C3D1A" }}>(typical: {productType.typical_pct}%)</span>
               </label>
               <input type="range" min="0" max={productType.max_pct * 1.5} step="0.1" value={targetPct}
                 onChange={e => setTargetPct(Number(e.target.value))}
-                style={{ width: "100%", accentColor: isOverMax ? "#B5603C" : "#6B5010" }} />
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#8B6914", marginTop: 2 }}>
+                style={{ width: "100%", accentColor: isOverMax ? "#B5603C" : "#C2410C" }} />
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#5C3D1A", marginTop: 2 }}>
                 <span>0%</span>
                 <span style={{ color: "#4E7A3C" }}>Typical {productType.typical_pct}%</span>
                 <span style={{ color: "#B5603C" }}>Max {productType.max_pct}%</span>
@@ -243,8 +243,8 @@ export default function FragranceCalculator() {
           </div>
 
           {/* Results */}
-          <div style={{ background: "#2E2208", borderRadius: 16, padding: 24 }}>
-            <h3 style={{ fontSize: 18, fontFamily: "'Playfair Display'", color: "#FAF6ED", marginBottom: 20 }}>Results</h3>
+          <div style={{ background: "#1A1410", borderRadius: 16, padding: 24 }}>
+            <h3 style={{ fontSize: 18, fontFamily: "'Playfair Display'", color: "#FFFCF7", marginBottom: 20 }}>Results</h3>
 
             {[
               { label: "Fragrance amount", value: `${fragranceAmount.toFixed(2)} g`, accent: isOverMax ? "#C97B5A" : "#8FAF7E" },
@@ -274,16 +274,16 @@ export default function FragranceCalculator() {
           {/* Sensitizer reference */}
           <div style={S.card}>
             <h3 style={{ fontSize: 15, fontFamily: "'Playfair Display'", marginBottom: 12 }}>⚠️ Common Sensitizers</h3>
-            <p style={{ fontSize: 12, color: "#8B6914", marginBottom: 12 }}>These ingredients have IFRA limits. Stay within limits to avoid skin reactions.</p>
+            <p style={{ fontSize: 12, color: "#5C3D1A", marginBottom: 12 }}>These ingredients have IFRA limits. Stay within limits to avoid skin reactions.</p>
             {SENSITIZERS.filter(s => !s.lipOnly || productType.id === "lip_balm").map(s => (
-              <div key={s.name} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #F3EAD6", fontSize: 12 }}>
+              <div key={s.name} style={{ display: "flex", justifyContent: "space-between", padding: "7px 0", borderBottom: "1px solid #FFF0DC", fontSize: 12 }}>
                 <span>{s.name}</span>
                 <span style={{ fontFamily: "'JetBrains Mono'", color: s.warning === "high" ? "#B5603C" : "#C97B5A", fontWeight: 600 }}>
                   max {s.limit}%
                 </span>
               </div>
             ))}
-            <p style={{ fontSize: 11, color: "#8B6914", marginTop: 10, opacity: 0.7 }}>Always verify limits with your FO supplier's IFRA certificate.</p>
+            <p style={{ fontSize: 11, color: "#5C3D1A", marginTop: 10, opacity: 0.7 }}>Always verify limits with your FO supplier's IFRA certificate.</p>
           </div>
         </div>
       </div>
@@ -292,8 +292,8 @@ export default function FragranceCalculator() {
 }
 
 const S = {
-  card: { background: "rgba(255,255,255,0.85)", borderRadius: 16, border: "1px solid #E8D5B4", padding: 24 },
+  card: { background: "#FFFFFF", borderRadius: 16, border: "1px solid #E8C48A", padding: 24 },
   sectionTitle: { fontSize: 18, fontFamily: "'Playfair Display'", marginBottom: 16 },
-  label: { display: "block", fontSize: 13, fontWeight: 500, color: "#6B5010", marginBottom: 6 },
-  input: { width: "100%", background: "#FDFBF7", border: "1px solid #E8D5B4", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#2E2208", outline: "none", fontFamily: "inherit" },
+  label: { display: "block", fontSize: 13, fontWeight: 500, color: "#C2410C", marginBottom: 6 },
+  input: { width: "100%", background: "#FFFFFF", border: "1px solid #E8C48A", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#1A1410", outline: "none", fontFamily: "inherit" },
 };

@@ -17,15 +17,15 @@ const CATEGORIES = [
 ];
 
 const CAT_COLORS = {
-  oil: "#4E7A3C", butter: "#8F4A2C", lye: "#306080", liquid: "#4A7FA8",
-  wax: "#6B5010", fragrance: "#8F4A2C", emulsifier: "#4E7A3C",
-  additive: "#6B5010", colorant: "#7B5EA7", preservative: "#306080", other: "#6B5010",
+  oil: "#15803D", butter: "#C2410C", lye: "#0369A1", liquid: "#0284C7",
+  wax: "#EA580C", fragrance: "#C2410C", emulsifier: "#15803D",
+  additive: "#EA580C", colorant: "#7C3AED", preservative: "#0369A1", other: "#EA580C",
 };
 
 const CAT_BG = {
-  oil: "#8FAF7E22", butter: "#C97B5A22", lye: "#6B9DC222", liquid: "#6B9DC222",
-  wax: "#8B691422", fragrance: "#C97B5A22", emulsifier: "#8FAF7E22",
-  additive: "#8B691422", colorant: "#9B7EC822", preservative: "#6B9DC222", other: "#8B691422",
+  oil: "#BBF7D055", butter: "#FFEDD555", lye: "#E0F2FE", liquid: "#E0F2FE",
+  wax: "#FFEDD5", fragrance: "#FFEDD5", emulsifier: "#BBF7D055",
+  additive: "#FFEDD5", colorant: "#EDE9FE", preservative: "#E0F2FE", other: "#FFEDD5",
 };
 
 export default function IngredientsPage() {
@@ -80,7 +80,7 @@ export default function IngredientsPage() {
       <div style={S.tableWrap}>
         <table style={S.table}>
           <thead>
-            <tr style={{ background: "#F3EAD6" }}>
+            <tr style={{ background: "#FFF0DC" }}>
               {["Ingredient / INCI", "Category", "Supplier", "Cost / unit", "SAP NaOH", "Stock", "Actions"].map(h => (
                 <TH key={h}>{h}</TH>
               ))}
@@ -88,34 +88,34 @@ export default function IngredientsPage() {
           </thead>
           <tbody>
             {filtered.length === 0 && (
-              <tr><td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "#8B6914", fontSize: 14 }}>No ingredients found</td></tr>
+              <tr><td colSpan={7} style={{ padding: "40px", textAlign: "center", color: "#5C3D1A", fontSize: 14 }}>No ingredients found</td></tr>
             )}
             {filtered.map(ing => {
               const low = ing.stock_on_hand < 200;
               const critical = ing.stock_on_hand < 50;
               return (
-                <tr key={ing.id} style={{ borderTop: "1px solid #F3EAD6", transition: "background 0.1s" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "#FDFBF7"}
+                <tr key={ing.id} style={{ borderTop: "1px solid #FFF0DC", transition: "background 0.1s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#FFFFFF"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   <td style={{ padding: "13px 16px" }}>
                     <div style={{ fontSize: 14, fontWeight: 600 }}>{ing.name}</div>
-                    {ing.inci_name && <div style={{ fontSize: 11, color: "#8B6914", marginTop: 2 }}>{ing.inci_name}</div>}
-                    {ing.cas_number && <div style={{ fontSize: 10, color: "#8B691480", marginTop: 1, fontFamily: "'JetBrains Mono'" }}>CAS {ing.cas_number}</div>}
+                    {ing.inci_name && <div style={{ fontSize: 11, color: "#5C3D1A", marginTop: 2 }}>{ing.inci_name}</div>}
+                    {ing.cas_number && <div style={{ fontSize: 10, color: "#5C3D1A80", marginTop: 1, fontFamily: "'JetBrains Mono'" }}>CAS {ing.cas_number}</div>}
                   </td>
                   <td style={{ padding: "13px 16px" }}>
                     <CatBadge cat={ing.category} />
                   </td>
-                  <td style={{ padding: "13px 16px", fontSize: 13, color: "#6B5010" }}>{ing.supplier || <span style={{ opacity: 0.4 }}>—</span>}</td>
+                  <td style={{ padding: "13px 16px", fontSize: 13, color: "#C2410C" }}>{ing.supplier || <span style={{ opacity: 0.4 }}>—</span>}</td>
                   <td style={{ padding: "13px 16px", fontFamily: "'JetBrains Mono'", fontSize: 13, color: "#4E7A3C" }}>
                     {ing.cost_per_unit != null ? `$${Number(ing.cost_per_unit).toFixed(4)}/${ing.unit}` : <span style={{ opacity: 0.4 }}>—</span>}
                   </td>
-                  <td style={{ padding: "13px 16px", fontFamily: "'JetBrains Mono'", fontSize: 12, color: "#6B5010" }}>
+                  <td style={{ padding: "13px 16px", fontFamily: "'JetBrains Mono'", fontSize: 12, color: "#C2410C" }}>
                     {ing.sap_value_naoh != null ? Number(ing.sap_value_naoh).toFixed(4) : <span style={{ opacity: 0.4 }}>—</span>}
                   </td>
                   <td style={{ padding: "13px 16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div>
-                        <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 15, fontWeight: 700, color: critical ? "#B5603C" : low ? "#C97B5A" : "#2E2208" }}>
+                        <div style={{ fontFamily: "'JetBrains Mono'", fontSize: 15, fontWeight: 700, color: critical ? "#B5603C" : low ? "#C97B5A" : "#1A1410" }}>
                           {Number(ing.stock_on_hand).toLocaleString()}
                           <span style={{ fontSize: 11, fontWeight: 400, marginLeft: 2 }}>{ing.unit}</span>
                         </div>
@@ -155,7 +155,7 @@ function StockBar({ value, low, critical }) {
   const pct = Math.min(100, (value / max) * 100);
   const color = critical ? "#B5603C" : low ? "#C97B5A" : "#6D9B58";
   return (
-    <div style={{ width: 48, height: 4, background: "#E8D5B4", borderRadius: 2, overflow: "hidden" }}>
+    <div style={{ width: 48, height: 4, background: "#E8C48A", borderRadius: 2, overflow: "hidden" }}>
       <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 2, transition: "width 0.3s" }} />
     </div>
   );
@@ -269,7 +269,7 @@ function ReceiveLotModal({ ingredient, onClose }) {
 
   return (
     <Modal title={`Receive Lot: ${ingredient.name}`} onClose={onClose} width={480}>
-      <div style={{ padding: "10px 14px", background: "#F3EAD6", borderRadius: 10, marginBottom: 20, fontSize: 13, color: "#4A380C" }}>
+      <div style={{ padding: "10px 14px", background: "#FFF0DC", borderRadius: 10, marginBottom: 20, fontSize: 13, color: "#3D2914" }}>
         Current stock: <strong>{Number(ingredient.stock_on_hand).toLocaleString()} {ingredient.unit}</strong>
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -312,7 +312,7 @@ function LedgerModal({ ingredient, onClose }) {
 
   return (
     <Modal title={`Inventory Ledger: ${ingredient.name}`} onClose={onClose} width={660}>
-      <div style={{ marginBottom: 16, padding: "10px 14px", background: "#F3EAD6", borderRadius: 10, display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+      <div style={{ marginBottom: 16, padding: "10px 14px", background: "#FFF0DC", borderRadius: 10, display: "flex", justifyContent: "space-between", fontSize: 14 }}>
         <span>Current stock on hand</span>
         <strong style={{ fontFamily: "'JetBrains Mono'" }}>{Number(ingredient.stock_on_hand).toLocaleString()} {ingredient.unit}</strong>
       </div>
@@ -320,27 +320,27 @@ function LedgerModal({ ingredient, onClose }) {
         <div style={{ maxHeight: 420, overflowY: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
-              <tr style={{ background: "#F3EAD6", position: "sticky", top: 0 }}>
+              <tr style={{ background: "#FFF0DC", position: "sticky", top: 0 }}>
                 {["Date", "Reason", "Change", "Running Total", "Note"].map(h => <TH key={h} small>{h}</TH>)}
               </tr>
             </thead>
             <tbody>
               {running.map(t => (
-                <tr key={t.id} style={{ borderTop: "1px solid #F3EAD6" }}>
-                  <td style={{ padding: "8px 12px", color: "#6B5010" }}>{new Date(t.created_at).toLocaleDateString()}</td>
+                <tr key={t.id} style={{ borderTop: "1px solid #FFF0DC" }}>
+                  <td style={{ padding: "8px 12px", color: "#C2410C" }}>{new Date(t.created_at).toLocaleDateString()}</td>
                   <td style={{ padding: "8px 12px" }}>
-                    <span style={{ padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: (REASON_COLORS[t.reason] || "#8B6914") + "22", color: REASON_COLORS[t.reason] || "#8B6914" }}>
+                    <span style={{ padding: "2px 8px", borderRadius: 4, fontSize: 11, fontWeight: 600, background: (REASON_COLORS[t.reason] || "#5C3D1A") + "22", color: REASON_COLORS[t.reason] || "#5C3D1A" }}>
                       {t.reason}
                     </span>
                   </td>
                   <td style={{ padding: "8px 12px", fontFamily: "'JetBrains Mono'", fontWeight: 700, color: Number(t.quantity_delta) >= 0 ? "#4E7A3C" : "#B5603C" }}>
                     {Number(t.quantity_delta) >= 0 ? "+" : ""}{Number(t.quantity_delta).toFixed(2)}
                   </td>
-                  <td style={{ padding: "8px 12px", fontFamily: "'JetBrains Mono'", color: "#4A380C" }}>{Number(t.running).toFixed(2)} {ingredient.unit}</td>
-                  <td style={{ padding: "8px 12px", color: "#8B6914", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.notes || "—"}</td>
+                  <td style={{ padding: "8px 12px", fontFamily: "'JetBrains Mono'", color: "#3D2914" }}>{Number(t.running).toFixed(2)} {ingredient.unit}</td>
+                  <td style={{ padding: "8px 12px", color: "#5C3D1A", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.notes || "—"}</td>
                 </tr>
               ))}
-              {running.length === 0 && <tr><td colSpan={5} style={{ padding: "30px", textAlign: "center", color: "#8B6914" }}>No transactions yet</td></tr>}
+              {running.length === 0 && <tr><td colSpan={5} style={{ padding: "30px", textAlign: "center", color: "#5C3D1A" }}>No transactions yet</td></tr>}
             </tbody>
           </table>
         </div>
@@ -357,7 +357,7 @@ function PageShell({ children }) {
 
 function CatBadge({ cat }) {
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", padding: "2px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: CAT_BG[cat] || "#8B691422", color: CAT_COLORS[cat] || "#6B5010" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", padding: "2px 10px", borderRadius: 999, fontSize: 11, fontWeight: 600, background: CAT_BG[cat] || "#5C3D1A22", color: CAT_COLORS[cat] || "#C2410C" }}>
       {CATEGORIES.find(c => c.value === cat)?.label || cat}
     </span>
   );
@@ -365,20 +365,20 @@ function CatBadge({ cat }) {
 
 function FilterChip({ label, active, onClick }) {
   return (
-    <button onClick={onClick} style={{ padding: "5px 12px", borderRadius: 16, border: "1px solid", fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "all 0.15s", borderColor: active ? "#6B5010" : "#E8D5B4", background: active ? "#6B5010" : "transparent", color: active ? "#FDFBF7" : "#6B5010" }}>
+    <button onClick={onClick} style={{ padding: "5px 12px", borderRadius: 16, border: "1px solid", fontSize: 12, fontWeight: 500, cursor: "pointer", transition: "all 0.15s", borderColor: active ? "#C2410C" : "#E8C48A", background: active ? "#C2410C" : "transparent", color: active ? "#FFFFFF" : "#C2410C" }}>
       {label}
     </button>
   );
 }
 
 function TH({ children, small }) {
-  return <th style={{ padding: small ? "8px 12px" : "11px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#8B6914", fontFamily: "'DM Sans'", whiteSpace: "nowrap" }}>{children}</th>;
+  return <th style={{ padding: small ? "8px 12px" : "11px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "#5C3D1A", fontFamily: "'DM Sans'", whiteSpace: "nowrap" }}>{children}</th>;
 }
 
 function Field({ label, children, span }) {
   return (
     <div style={{ gridColumn: span === 2 ? "1 / -1" : undefined, marginBottom: 2 }}>
-      <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#6B5010", marginBottom: 4 }}>{label}</label>
+      <label style={{ display: "block", fontSize: 12, fontWeight: 500, color: "#C2410C", marginBottom: 4 }}>{label}</label>
       {children}
     </div>
   );
@@ -386,11 +386,11 @@ function Field({ label, children, span }) {
 
 function Modal({ title, onClose, children, width = 560 }) {
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(46,34,8,0.4)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-      <div style={{ background: "#FAF6ED", borderRadius: 20, border: "1px solid #E8D5B4", width: "100%", maxWidth: width, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px rgba(46,34,8,0.2)", animation: "slideIn 0.2s ease-out" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: "1px solid #E8D5B4", position: "sticky", top: 0, background: "#FAF6ED", zIndex: 1 }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(26,20,16,0.55)", backdropFilter: "blur(4px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      <div style={{ background: "#FFFCF7", borderRadius: 20, border: "1px solid #E8C48A", width: "100%", maxWidth: width, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px rgba(26,20,16,0.28)", animation: "slideIn 0.2s ease-out" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", borderBottom: "1px solid #E8C48A", position: "sticky", top: 0, background: "#FFFCF7", zIndex: 1 }}>
           <h3 style={{ fontSize: 18, fontFamily: "'Playfair Display'" }}>{title}</h3>
-          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "#8B6914", lineHeight: 1 }}>×</button>
+          <button onClick={onClose} style={{ background: "none", border: "none", fontSize: 24, cursor: "pointer", color: "#5C3D1A", lineHeight: 1 }}>×</button>
         </div>
         <div style={{ padding: 24 }}>{children}</div>
       </div>
@@ -401,9 +401,9 @@ function Modal({ title, onClose, children, width = 560 }) {
 function Btn({ children, onClick, variant = "primary", small, disabled }) {
   const base = { display: "inline-flex", alignItems: "center", gap: 6, borderRadius: 8, fontFamily: "'DM Sans'", fontWeight: 600, cursor: disabled ? "not-allowed" : "pointer", border: "none", transition: "all 0.15s", fontSize: small ? 12 : 14, padding: small ? "5px 10px" : "9px 18px", opacity: disabled ? 0.6 : 1 };
   const variants = {
-    primary: { background: "#6B5010", color: "#FDFBF7" },
-    secondary: { background: "#F3EAD6", color: "#4A380C", border: "1px solid #E8D5B4" },
-    ghost: { background: "transparent", color: "#6B5010" },
+    primary: { background: "#EA580C", color: "#FFFFFF", boxShadow: "0 2px 12px rgba(234, 88, 12, 0.35)" },
+    secondary: { background: "#FFF0DC", color: "#3D2914", border: "1px solid #E8C48A" },
+    ghost: { background: "transparent", color: "#C2410C" },
     sage: { background: "#6D9B58", color: "#fff" },
     danger: { background: "#B5603C", color: "#fff" },
   };
@@ -413,9 +413,9 @@ function Btn({ children, onClick, variant = "primary", small, disabled }) {
 const S = {
   header: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 },
   pageTitle: { fontSize: 28, fontFamily: "'Playfair Display'" },
-  pageSub: { fontSize: 14, color: "#8B6914", marginTop: 4 },
-  loading: { padding: "40px", color: "#8B6914", fontSize: 14 },
-  tableWrap: { background: "rgba(255,255,255,0.85)", borderRadius: 16, border: "1px solid #E8D5B4", overflow: "hidden" },
+  pageSub: { fontSize: 14, color: "#5C3D1A", marginTop: 4 },
+  loading: { padding: "40px", color: "#5C3D1A", fontSize: 14 },
+  tableWrap: { background: "#FFFFFF", borderRadius: 16, border: "1px solid #E8C48A", overflow: "hidden" },
   table: { width: "100%", borderCollapse: "collapse" },
-  input: { width: "100%", background: "#FDFBF7", border: "1px solid #E8D5B4", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#2E2208", outline: "none", fontFamily: "inherit" },
+  input: { width: "100%", background: "#FFFFFF", border: "1px solid #E8C48A", borderRadius: 8, padding: "8px 12px", fontSize: 14, color: "#1A1410", outline: "none", fontFamily: "inherit" },
 };
