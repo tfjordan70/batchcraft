@@ -1,3 +1,13 @@
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+# Repo-root .env (same directory as docker-compose.yml). Docker Compose injects env
+# into the container, but local `flask run` / gunicorn from ./backend needs this.
+_repo_root = Path(__file__).resolve().parent.parent.parent
+load_dotenv(_repo_root / ".env")
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate

@@ -1,3 +1,5 @@
+import os
+
 from flask import Blueprint, request, jsonify, current_app
 from app import db
 from app.models import Ingredient, IngredientLot, InventoryTransaction
@@ -16,7 +18,10 @@ def lookup_ingredient_ai(tenant_id, current_user):
     if not name:
         return jsonify({"error": "name is required"}), 400
 
-    api_key = current_app.config.get("OPENAI_API_KEY") or ""
+    api_key = (
+        (current_app.config.get("OPENAI_API_KEY") or "").strip()
+        or (os.environ.get("OPENAI_API_KEY") or "").strip()
+    )
     if not api_key:
         return jsonify({
             "error": "AI lookup is not configured. Set OPENAI_API_KEY in the server environment.",

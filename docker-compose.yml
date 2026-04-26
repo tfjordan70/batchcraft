@@ -24,6 +24,9 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-jwt-in-production}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:6080,https://batchcraft.yourdomain.com}
+      # Passed from repo-root .env into the container (Compose does not auto-forward every .env key)
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
     depends_on:
       db:
         condition: service_healthy
