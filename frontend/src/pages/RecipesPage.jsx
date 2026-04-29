@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { useRecipes, useScaleRecipe, useIngredients } from "../hooks/useApi";
+import { useRecipes, useScaleRecipe, useIngredients, useDeleteRecipe } from "../hooks/useApi";
 import { exportRecipe } from "../utils/exports";
 
 const CATEGORIES = [
@@ -23,6 +23,7 @@ export default function RecipesPage() {
   const navigate = useNavigate();
   const { data: recipes = [], isLoading } = useRecipes();
   const { data: ingredients = [] } = useIngredients({ stock: true });
+  const deleteRecipe = useDeleteRecipe();
   const [search, setSearch] = useState("");
   const [catFilter, setCatFilter] = useState("all");
   const [showArchived, setShowArchived] = useState(false);
@@ -33,6 +34,14 @@ export default function RecipesPage() {
     (showArchived || !r.is_archived) &&
     (!search || r.name.toLowerCase().includes(search.toLowerCase()))
   ), [recipes, catFilter, showArchived, search]);
+
+  const handleDeleteRecipe = (r) => {
+    const ok = window.confirm(
+      `Delete “${r.name}”? This cannot be undone. Past batches stay in your history but will no longer be linked to this recipe.`
+    );
+    if (!ok) return;
+    deleteRecipe.mutate(r.id);
+  };
 
   const costPerUnit = (recipe) => {
     if (!recipe.ingredients?.length || !recipe.yield_count) return null;
@@ -78,22 +87,25 @@ export default function RecipesPage() {
           {filtered.map(r => (
             <RecipeCard key={r.id} recipe={r} cpu={costPerUnit(r)}
               onEdit={() => navigate(`/recipes/${r.id}/edit`)}
+              onClone={() => navigate(`/recipes/new?clone=${r.id}`)}
               onScale={() => setScaleModal(r)}
               onExport={() => exportRecipe(r)}
-              onBatch={() => navigate(`/batches/new?recipe=${r.id}`)}
+              onBatch={() => navigate(`/batches?new=1&recipe=${r.id}`)}
+              onDelete={() => handleDeleteRecipe(r)}
+              deletePending={deleteRecipe.isPending && deleteRecipe.variables === r.id}
             />
           ))}
         </div>
       )}
 
-      {scaleModal && <ScaleModal recipe={scaleModal} ingredients={ingredients} onClose={() => setScaleModal(null)} onBatch={(id) => { setScaleModal(null); navigate(`/batches/new?recipe=${id}`); }} />}
+      {scaleModal && <ScaleModal recipe={scaleModal} ingredients={ingredients} onClose={() => setScaleModal(null)} onBatch={(id) => { setScaleModal(null); navigate(`/batches?new=1&recipe=${id}`); }} />}
     </Shell>
   );
 }
 
 // ─── Recipe Card ──────────────────────────────────────────────────────────────
 
-function RecipeCard({ recipe, cpu, onEdit, onScale, onExport, onBatch }) {
+function RecipeCard({ recipe, cpu, onEdit, onClone, onScale, onExport, onBatch, onDelete, deletePending }) {
   const [hovered, setHovered] = useState(false);
   const cat = CAT_STYLE[recipe.category] || CAT_STYLE.other;
   const catMeta = CATEGORIES.find(c => c.value === recipe.category);
@@ -146,10 +158,14 @@ function RecipeCard({ recipe, cpu, onEdit, onScale, onExport, onBatch }) {
         )}
 
         {/* Actions */}
-        <div style={{ display: "flex", gap: 6, borderTop: "1px solid #FFF0DC", paddingTop: 14 }}>
+        <div style={{ display: "flex", gap: 6, borderTop: "1px solid #FFF0DC", paddingTop: 14, flexWrap: "wrap", alignItems: "center" }}>
           <Btn small onClick={onBatch}>🧪 Batch</Btn>
           <Btn small variant="secondary" onClick={onScale}>⚖️ Scale</Btn>
           <Btn small variant="ghost" onClick={onEdit}>Edit</Btn>
+          <Btn small variant="ghost" onClick={onClone}>Clone</Btn>
+          <Btn small variant="ghost" onClick={onDelete} disabled={deletePending} style={{ color: "#B91C1C", fontWeight: 700 }}>
+            {deletePending ? "…" : "Delete"}
+          </Btn>
           <Btn small variant="ghost" onClick={onExport} style={{ marginLeft: "auto" }}>↓</Btn>
         </div>
       </div>
@@ -227,10 +243,10 @@ function ScaleModal({ recipe, ingredients, onClose, onBatch }) {
           {result && (
             <div>
               {result.ingredients.map(ri => {
-                const ing = ingredients.find(i => i.id === ri.ingredient_id);
+                const ing = ri.ingredient_id ? ingredients.find(i => i.id === ri.ingredient_id) : null;
                 const hasEnough = ing ? ing.stock_on_hand >= ri.amount_scaled : true;
                 return (
-                  <div key={ri.ingredient_id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: hasEnough ? "#FFFFFF" : "#FFF0EB", borderRadius: 8, marginBottom: 4, border: `1px solid ${hasEnough ? "#FFF0DC" : "#C97B5A40"}` }}>
+                  <div key={ri.id || ri.ingredient_id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", background: hasEnough ? "#FFFFFF" : "#FFF0EB", borderRadius: 8, marginBottom: 4, border: `1px solid ${hasEnough ? "#FFF0DC" : "#C97B5A40"}` }}>
                     <div>
                       <span style={{ fontSize: 14 }}>{ri.ingredient_name}</span>
                       {!hasEnough && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#B5603C" }}>⚠️ LOW STOCK</span>}

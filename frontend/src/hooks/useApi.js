@@ -2,6 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "../utils/api";
 import toast from "react-hot-toast";
 
+function invalidateDashboard(qc) {
+  qc.invalidateQueries({ queryKey: ["dashboard"] });
+}
+
 // ─── Ingredients ──────────────────────────────────────────────────────────────
 
 export function useIngredients(params = {}) {
@@ -23,7 +27,7 @@ export function useCreateIngredient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data) => api.post("/ingredients/", data).then(r => r.data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ingredients"] }); toast.success("Ingredient added"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ingredients"] }); invalidateDashboard(qc); toast.success("Ingredient added"); },
     onError: (e) => toast.error(e.response?.data?.error || "Failed to add ingredient"),
   });
 }
@@ -41,7 +45,7 @@ export function useUpdateIngredient() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...data }) => api.put(`/ingredients/${id}`, data).then(r => r.data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ingredients"] }); toast.success("Ingredient updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ingredients"] }); invalidateDashboard(qc); toast.success("Ingredient updated"); },
     onError: (e) => toast.error(e.response?.data?.error || "Update failed"),
   });
 }
@@ -54,6 +58,7 @@ export function useDeleteIngredient() {
       qc.invalidateQueries({ queryKey: ["ingredients"] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
       qc.invalidateQueries({ queryKey: ["recipes"] });
+      invalidateDashboard(qc);
       toast.success("Ingredient archived");
     },
     onError: (e) => toast.error(e.response?.data?.error || "Could not delete ingredient"),
@@ -64,7 +69,7 @@ export function useAddLot() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ ingredientId, ...data }) => api.post(`/ingredients/${ingredientId}/lots`, data).then(r => r.data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ingredients"] }); qc.invalidateQueries({ queryKey: ["inventory"] }); toast.success("Lot received — inventory updated"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["ingredients"] }); qc.invalidateQueries({ queryKey: ["inventory"] }); invalidateDashboard(qc); toast.success("Lot received — inventory updated"); },
     onError: (e) => toast.error(e.response?.data?.error || "Failed to add lot"),
   });
 }
@@ -98,7 +103,7 @@ export function useCreateRecipe() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data) => api.post("/recipes/", data).then(r => r.data),
-    onSuccess: (data) => { qc.invalidateQueries({ queryKey: ["recipes"] }); toast.success(`Recipe "${data.name}" created`); },
+    onSuccess: (data) => { qc.invalidateQueries({ queryKey: ["recipes"] }); invalidateDashboard(qc); toast.success(`Recipe "${data.name}" created`); },
     onError: (e) => toast.error(e.response?.data?.error || "Failed to create recipe"),
   });
 }
@@ -107,8 +112,23 @@ export function useUpdateRecipe() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...data }) => api.put(`/recipes/${id}`, data).then(r => r.data),
-    onSuccess: (data) => { qc.invalidateQueries({ queryKey: ["recipes"] }); toast.success("Recipe saved"); },
+    onSuccess: (data) => { qc.invalidateQueries({ queryKey: ["recipes"] }); invalidateDashboard(qc); toast.success("Recipe saved"); },
     onError: (e) => toast.error(e.response?.data?.error || "Failed to save recipe"),
+  });
+}
+
+export function useDeleteRecipe() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.delete(`/recipes/${id}`).then(r => r.data),
+    onSuccess: (_, id) => {
+      qc.invalidateQueries({ queryKey: ["recipes"] });
+      qc.invalidateQueries({ queryKey: ["batches"] });
+      invalidateDashboard(qc);
+      qc.removeQueries({ queryKey: ["recipes", id] });
+      toast.success("Recipe deleted");
+    },
+    onError: (e) => toast.error(e.response?.data?.error || "Failed to delete recipe"),
   });
 }
 
@@ -141,9 +161,85 @@ export function useCreateBatch() {
     mutationFn: (data) => api.post("/batches/", data).then(r => r.data),
     onSuccess: (data) => {
       qc.invalidateQueries({ queryKey: ["batches"] });
+      invalidateDashboard(qc);
       toast.success(`Batch ${data.batch_number} created`);
     },
     onError: (e) => toast.error(e.response?.data?.error || "Failed to create batch"),
+  });
+}
+
+export function useUpdateBatch() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...payload }) => api.put(`/batches/${id}`, payload).then((r) => r.data),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["batches"] });
+      invalidateDashboard(qc);
+      if (data?.id) qc.invalidateQueries({ queryKey: ["batches", data.id] });
+      toast.success(`Batch ${data.batch_number} updated`);
+    },
+    onError: (e) => toast.error(e.response?.data?.error || "Failed to update batch"),
+  });
+}
+
+export function useMarkBatchCureComplete() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.post(`/batches/${id}/cure-complete`).then((r) => r.data),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["batches"] });
+      invalidateDashboard(qc);
+      if (data?.id) qc.invalidateQueries({ queryKey: ["batches", data.id] });
+      toast.success("Marked cure complete");
+    },
+    onError: (e) => toast.error(e.response?.data?.error || "Update failed"),
+  });
+}
+
+export function useClearBatchCureComplete() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => api.delete(`/batches/${id}/cure-complete`).then((r) => r.data),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["batches"] });
+      invalidateDashboard(qc);
+      if (data?.id) qc.invalidateQueries({ queryKey: ["batches", data.id] });
+      toast.success("Cure complete cleared");
+    },
+    onError: (e) => toast.error(e.response?.data?.error || "Update failed"),
+  });
+}
+
+export function useUploadBatchImage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ batchId, file, caption, notify }) => {
+      const fd = new FormData();
+      fd.append("file", file);
+      if (caption) fd.append("caption", caption);
+      return api.post(`/batches/${batchId}/images`, fd).then((r) => r.data);
+    },
+    onSuccess: (data, variables) => {
+      qc.invalidateQueries({ queryKey: ["batches"] });
+      invalidateDashboard(qc);
+      if (data?.id) qc.invalidateQueries({ queryKey: ["batches", data.id] });
+      if (variables?.notify !== false) toast.success("Image added");
+    },
+    onError: (e) => toast.error(e.response?.data?.error || "Upload failed"),
+  });
+}
+
+export function useDeleteBatchImage() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ batchId, imageId }) => api.delete(`/batches/${batchId}/images/${imageId}`).then((r) => r.data),
+    onSuccess: (data) => {
+      qc.invalidateQueries({ queryKey: ["batches"] });
+      invalidateDashboard(qc);
+      if (data?.id) qc.invalidateQueries({ queryKey: ["batches", data.id] });
+      toast.success("Image removed");
+    },
+    onError: (e) => toast.error(e.response?.data?.error || "Delete failed"),
   });
 }
 
@@ -155,6 +251,7 @@ export function useCompleteBatch() {
       qc.invalidateQueries({ queryKey: ["batches"] });
       qc.invalidateQueries({ queryKey: ["inventory"] });
       qc.invalidateQueries({ queryKey: ["ingredients"] });
+      invalidateDashboard(qc);
       toast.success(`Batch ${data.batch_number} completed — inventory updated`);
     },
     onError: (e) => toast.error(e.response?.data?.error || "Failed to complete batch"),
@@ -182,7 +279,7 @@ export function useAdjustInventory() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (data) => api.post("/inventory/adjust", data).then(r => r.data),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ["inventory"] }); qc.invalidateQueries({ queryKey: ["ingredients"] }); toast.success("Inventory adjusted"); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["inventory"] }); qc.invalidateQueries({ queryKey: ["ingredients"] }); invalidateDashboard(qc); toast.success("Inventory adjusted"); },
   });
 }
 

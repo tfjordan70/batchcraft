@@ -45,4 +45,26 @@ def create_app(config_class=Config):
     app.register_blueprint(inventory_bp, url_prefix="/api/inventory")
     app.register_blueprint(reports_bp, url_prefix="/api/reports")
 
+    from app.soapcalc_import import register_soapcalc_cli
+
+    register_soapcalc_cli(app)
+
+    upload_dir = app.config.get("UPLOAD_FOLDER")
+    if upload_dir:
+        try:
+            upload_dir.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass
+
+    with app.app_context():
+        from sqlalchemy.exc import OperationalError
+
+        from app.schema_ensure import ensure_recipe_ingredient_line_columns, ensure_batch_cure_columns
+
+        try:
+            ensure_recipe_ingredient_line_columns()
+            ensure_batch_cure_columns()
+        except OperationalError:
+            pass
+
     return app

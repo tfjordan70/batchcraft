@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from datetime import timedelta
 
 
@@ -14,6 +15,11 @@ class Config:
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:6080").split(",")
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
+    # Batch photos (bar, packaging); persisted under backend/instance/ by default
+    UPLOAD_FOLDER = Path(
+        os.environ.get("BATCHCRAFT_UPLOAD_DIR", "")
+        or (Path(__file__).resolve().parent / "instance" / "uploads")
+    )
 
 
 class DevelopmentConfig(Config):

@@ -28,11 +28,14 @@ function downloadCSV(filename, rows, headers) {
 
 export function exportBatches(batches) {
   const headers = [
-    "batch_number", "recipe_name", "status", "scale_factor",
-    "yield_actual", "yield_unit", "unit_count", "made_at", "notes",
+    "batch_number", "soap_name", "recipe_name", "status", "scale_factor",
+    "yield_actual", "yield_unit", "unit_count", "made_at",
+    "cure_started_at", "cure_weeks_min", "cure_weeks_max", "cure_ready_from", "cure_ready_until",
+    "cure_complete_at", "notes",
   ];
   const rows = batches.map(b => ({
     batch_number: b.batch_number,
+    soap_name: b.soap_name || "",
     recipe_name: b.recipe_name,
     status: b.status,
     scale_factor: b.scale_factor,
@@ -40,6 +43,12 @@ export function exportBatches(batches) {
     yield_unit: b.yield_unit,
     unit_count: b.unit_count,
     made_at: b.made_at ? new Date(b.made_at).toLocaleDateString() : "",
+    cure_started_at: b.cure_started_at ? new Date(b.cure_started_at).toLocaleString() : "",
+    cure_weeks_min: b.cure_weeks_min ?? "",
+    cure_weeks_max: b.cure_weeks_max ?? "",
+    cure_ready_from: b.cure_ready_from ? new Date(b.cure_ready_from).toLocaleString() : "",
+    cure_ready_until: b.cure_ready_until ? new Date(b.cure_ready_until).toLocaleString() : "",
+    cure_complete_at: b.cure_complete_at ? new Date(b.cure_complete_at).toLocaleString() : "",
     notes: b.notes,
   }));
   downloadCSV(`batches-${new Date().toISOString().slice(0, 10)}.csv`, rows, headers);

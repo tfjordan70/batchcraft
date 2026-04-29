@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from app import db
 import uuid
 
@@ -189,7 +189,8 @@ class RecipeIngredient(db.Model):
     __tablename__ = "recipe_ingredients"
     id = db.Column(db.String(36), primary_key=True, default=gen_uuid)
     recipe_id = db.Column(db.String(36), db.ForeignKey("recipes.id"), nullable=False)
-    ingredient_id = db.Column(db.String(36), db.ForeignKey("ingredients.id"), nullable=False)
+    ingredient_id = db.Column(db.String(36), db.ForeignKey("ingredients.id"), nullable=True)
+    line_name = db.Column(db.String(200), nullable=True)  # label-only row (e.g. lye, water) when no Ingredient
     amount = db.Column(db.Numeric(12, 4), nullable=False)
     unit = db.Column(db.String(20), default="g")
     phase = db.Column(db.String(50))                # water_phase, oil_phase, cool_down, etc.
@@ -200,11 +201,13 @@ class RecipeIngredient(db.Model):
     ingredient = db.relationship("Ingredient")
 
     def to_dict(self):
+        display_name = self.ingredient.name if self.ingredient else self.line_name
         return {
             "id": self.id,
             "recipe_id": self.recipe_id,
             "ingredient_id": self.ingredient_id,
-            "ingredient_name": self.ingredient.name if self.ingredient else None,
+            "line_name": self.line_name,
+            "ingredient_name": display_name,
             "inci_name": self.ingredient.inci_name if self.ingredient else None,
             "amount": float(self.amount),
             "unit": self.unit,
@@ -245,6 +248,13 @@ class Batch(db.Model):
     made_by = db.Column(db.String(36), db.ForeignKey("users.id"))
     notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    # Cure / retail (schema ensured on Postgres at startup; see schema_ensure.ensure_batch_cure_columns)
+    cure_started_at = db.Column(db.DateTime)
+    cure_weeks_min = db.Column(db.Numeric(5, 2))
+    cure_weeks_max = db.Column(db.Numeric(5, 2))
+    soap_name = db.Column(db.String(200))
+    cure_complete_at = db.Column(db.DateTime)
+    images = db.Column(db.JSON)
 
     tenant = db.relationship("Tenant", back_populates="batches")
     recipe = db.relationship("Recipe", back_populates="batches")
@@ -252,7 +262,29 @@ class Batch(db.Model):
     ingredient_usage = db.relationship("BatchIngredient", back_populates="batch",
                                         cascade="all, delete-orphan")
 
+    def _cure_ready_bounds(self):
+        """Earliest and latest ISO dates when cure window ends, from cure_started_at + weeks."""
+        start = self.cure_started_at
+        wmin = self.cure_weeks_min
+        wmax = self.cure_weeks_max
+        if start is None or (wmin is None and wmax is None):
+            return None, None
+        try:
+            a = float(wmin) if wmin is not None else float(wmax)
+            b = float(wmax) if wmax is not None else float(wmin)
+        except (TypeError, ValueError):
+            return None, None
+        lo, hi = (a, b) if a <= b else (b, a)
+        return (
+            (start + timedelta(weeks=lo)).isoformat(),
+            (start + timedelta(weeks=hi)).isoformat(),
+        )
+
     def to_dict(self, include_ingredients=False):
+        cr_from, cr_until = self._cure_ready_bounds()
+        raw_images = list(self.images) if isinstance(self.images, list) else []
+        image_meta = [{"id": x.get("id"), "caption": x.get("caption") or ""} for x in raw_images if x.get("id")]
+
         d = {
             "id": self.id,
             "batch_number": self.batch_number,
@@ -266,6 +298,14 @@ class Batch(db.Model):
             "made_at": self.made_at.isoformat() if self.made_at else None,
             "notes": self.notes,
             "created_at": self.created_at.isoformat(),
+            "cure_started_at": self.cure_started_at.isoformat() if self.cure_started_at else None,
+            "cure_weeks_min": float(self.cure_weeks_min) if self.cure_weeks_min is not None else None,
+            "cure_weeks_max": float(self.cure_weeks_max) if self.cure_weeks_max is not None else None,
+            "cure_ready_from": cr_from,
+            "cure_ready_until": cr_until,
+            "soap_name": self.soap_name,
+            "cure_complete_at": self.cure_complete_at.isoformat() if self.cure_complete_at else None,
+            "images": image_meta,
         }
         if include_ingredients:
             d["ingredients"] = [bi.to_dict() for bi in self.ingredient_usage]

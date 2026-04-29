@@ -1,0 +1,5 @@
+-- Optional manual migration (PostgreSQL) if not using app auto-ensure:
+-- ALTER TABLE recipe_ingredients ADD COLUMN line_name VARCHAR(200);
+-- ALTER TABLE recipe_ingredients ALTER COLUMN ingredient_id DROP NOT NULL;
+-- ALTER TABLE recipe_ingredients ADD CONSTRAINT ck_recipe_ingredients_line_or_ingredient
+--   CHECK (ingredient_id IS NOT NULL OR (line_name IS NOT NULL AND trim(line_name) <> ''));

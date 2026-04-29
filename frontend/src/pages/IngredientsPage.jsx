@@ -271,8 +271,8 @@ function AddIngredientModal({ onClose, onCreate }) {
         <Field label="Supplier (saved on ingredient)" span={2}><input value={form.supplier} onChange={e => set("supplier", e.target.value)} style={S.input} placeholder="Bramble Berry, Bulk Apothecary…" /></Field>
         <Field label="CAS Number"><input value={form.cas_number} onChange={e => set("cas_number", e.target.value)} style={S.input} placeholder="8001-31-8" /></Field>
         <Field label="Max Usage %"><input type="number" step="0.1" value={form.max_usage_pct} onChange={e => set("max_usage_pct", e.target.value)} style={S.input} placeholder="3.0" /></Field>
-        <Field label="SAP Value (NaOH)"><input type="number" step="0.001" value={form.sap_value_naoh} onChange={e => set("sap_value_naoh", e.target.value)} style={S.input} placeholder="0.190" /></Field>
-        <Field label="SAP Value (KOH)"><input type="number" step="0.001" value={form.sap_value_koh} onChange={e => set("sap_value_koh", e.target.value)} style={S.input} placeholder="0.267" /></Field>
+        <Field label="SAP Value (NaOH)"><input type="number" step="0.001" value={form.sap_value_naoh} onChange={e => set("sap_value_naoh", e.target.value)} style={S.input} placeholder="0.183 (e.g. coconut 76°)" /></Field>
+        <Field label="SAP Value (KOH)"><input type="number" step="0.001" value={form.sap_value_koh} onChange={e => set("sap_value_koh", e.target.value)} style={S.input} placeholder="0.257" /></Field>
         <Field label="Notes" span={2}><textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={2} style={{ ...S.input, resize: "vertical" }} /></Field>
         <Field label="Safety Notes" span={2}><textarea value={form.safety_notes} onChange={e => set("safety_notes", e.target.value)} rows={2} style={{ ...S.input, resize: "vertical" }} placeholder="Handle with gloves, caustic, etc." /></Field>
       </div>

@@ -1,8 +1,12 @@
 import { useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useRecipe } from "../hooks/useApi";
+import { useRecipe, useDeleteRecipe } from "../hooks/useApi";
 import { emailRecipe, printRecipe, smsRecipe } from "../utils/recipeShare";
-import { computeSoapBarQualities, SOAP_QUALITY_RANGES } from "../utils/soapQualities";
+import {
+  computeSoapBarQualities,
+  computeSoapRecipeSolutionStats,
+  SOAP_QUALITY_RANGES,
+} from "../utils/soapQualities";
 import toast from "react-hot-toast";
 
 const UI = {
@@ -31,10 +35,15 @@ function humanizePhase(phase) {
 export default function RecipeDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { data: recipe, isLoading, isError } = useRecipe(id);
+  const { data: recipe, isLoading, isError, refetch, isFetching } = useRecipe(id);
+  const deleteRecipe = useDeleteRecipe();
   const ingList = recipe?.ingredients;
   const soapQualities = useMemo(
     () => (recipe?.category === "soap" && ingList?.length ? computeSoapBarQualities(ingList) : null),
+    [recipe?.category, ingList]
+  );
+  const soapSolution = useMemo(
+    () => (recipe?.category === "soap" && ingList?.length ? computeSoapRecipeSolutionStats(ingList) : null),
     [recipe?.category, ingList]
   );
 
@@ -52,6 +61,29 @@ export default function RecipeDetailsPage() {
   const handleSms = () => {
     if (!recipe) return;
     smsRecipe(recipe);
+  };
+
+  const handleReloadRecipe = async () => {
+    const result = await refetch();
+    if (result.isError) {
+      toast.error("Could not refresh recipe.");
+      return;
+    }
+    toast.success("Recipe reloaded from the server.");
+  };
+
+  const handleDeleteRecipe = async () => {
+    if (!recipe) return;
+    const ok = window.confirm(
+      `Delete “${recipe.name}”? This cannot be undone. Past batches stay in your history but will no longer be linked to this recipe.`
+    );
+    if (!ok) return;
+    try {
+      await deleteRecipe.mutateAsync(recipe.id);
+      navigate("/recipes");
+    } catch {
+      /* toast from hook */
+    }
   };
 
   if (isLoading) {
@@ -96,6 +128,17 @@ export default function RecipeDetailsPage() {
           </button>
           <button type="button" onClick={() => navigate(`/recipes/${id}/edit`)} style={styles.btnPrimary}>
             Edit
+          </button>
+          <button type="button" onClick={() => navigate(`/recipes/new?clone=${id}`)} style={styles.btnSecondary}>
+            Clone
+          </button>
+          <button
+            type="button"
+            onClick={handleDeleteRecipe}
+            disabled={deleteRecipe.isPending}
+            style={{ ...styles.btnDanger, opacity: deleteRecipe.isPending ? 0.65 : 1 }}
+          >
+            {deleteRecipe.isPending ? "…" : "Delete"}
           </button>
         </div>
       </div>
@@ -175,23 +218,77 @@ export default function RecipeDetailsPage() {
       </div>
 
       {recipe.category === "soap" && (
-        <div style={{ ...styles.card, marginTop: 20, background: "#1A1410", borderColor: "#3D2914" }}>
-          <h2 style={{ ...styles.sectionTitle, color: "#FFFCF7" }}>Soap bar qualities</h2>
-          <p style={{ fontSize: 12, color: "rgba(255,252,247,0.55)", marginTop: -8, marginBottom: 16, lineHeight: 1.45 }}>
-            Estimated from oil names and amounts (oils phase only when present). Typical target ranges are shown under each bar.
+        <div style={{ ...styles.card, marginTop: 20, borderColor: "#D4BC94", background: "#FFFBF5" }}>
+          <div style={styles.qualitiesHeader}>
+            <h2 style={{ ...styles.sectionTitle, marginBottom: 0 }}>Soap bar qualities</h2>
+            <button
+              type="button"
+              onClick={handleReloadRecipe}
+              disabled={isFetching}
+              title="Fetches the latest saved recipe from the server. Bar qualities always follow the ingredients shown on this page."
+              style={{
+                ...styles.btnSecondary,
+                opacity: isFetching ? 0.65 : 1,
+                cursor: isFetching ? "wait" : "pointer",
+              }}
+            >
+              {isFetching ? "Reloading…" : "Reload recipe"}
+            </button>
+          </div>
+          <p style={{ fontSize: 13, color: "#5C4A3D", marginTop: 12, marginBottom: 18, lineHeight: 1.5 }}>
+            Same fatty-acid math as SoapCalc.net (MIT soap-calc oil list): blend lauric…linolenic by <strong>oil-phase</strong>{" "}
+            weights (including legacy rows with no phase when other lines use <strong>oils</strong> / <strong>water</strong> /{" "}
+            <strong>lye</strong> phases), then hardness, cleansing, conditioning, bubbly, and creamy use SoapCalc’s sums
+            on that blend. Water and lye lines do not change bar numbers. Typical ranges under each bar. Use{" "}
+            <strong>Reload recipe</strong> after edits elsewhere.
           </p>
+          {soapSolution && (soapSolution.waterG > 0 || soapSolution.lyeG > 0) && (
+            <div
+              style={{
+                marginBottom: 18,
+                padding: "12px 14px",
+                background: "rgba(124, 45, 18, 0.06)",
+                borderRadius: 10,
+                border: "1px solid #E8C48A",
+                fontSize: 13,
+                color: "#3D2914",
+                lineHeight: 1.55,
+              }}
+            >
+              <div style={{ fontWeight: 700, marginBottom: 6, color: "#7C2D12" }}>Lye solution (from recipe lines)</div>
+              {soapSolution.waterPctOfOils != null && (
+                <div>
+                  Water as % of oil weight:{" "}
+                  <strong style={{ fontFamily: "'JetBrains Mono', monospace" }}>{soapSolution.waterPctOfOils.toFixed(1)}%</strong>{" "}
+                  <span style={{ color: UI.muted }}>(water ÷ oils)</span>
+                </div>
+              )}
+              {soapSolution.waterToLyeMassRatio != null && (
+                <div style={{ marginTop: 4 }}>
+                  Water : lye <span style={{ color: UI.muted }}>(mass)</span>:{" "}
+                  <strong style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    {soapSolution.waterToLyeMassRatio.toFixed(2)} : 1
+                  </strong>
+                  <span style={{ color: UI.muted }}> — e.g. 1.75 : 1 means 1.75 parts water per 1 part lye by weight</span>
+                </div>
+              )}
+              {soapSolution.waterPctOfOils == null && soapSolution.waterToLyeMassRatio == null && (
+                <span style={{ color: UI.muted }}>Add <strong>water</strong> and <strong>lye</strong> phases (e.g. from Soap Calculator) to show ratios here.</span>
+              )}
+            </div>
+          )}
           {!soapQualities ? (
-            <p style={{ fontSize: 14, color: "rgba(255,252,247,0.65)" }}>
-              Add recognizable oils (e.g. coconut, olive, shea) in the <strong style={{ color: "#FFFCF7" }}>oils</strong> phase to see quality estimates.
+            <p style={{ fontSize: 14, color: "#3D2914" }}>
+              Add oils or fats in an <strong>oils</strong> (or <strong>oil_phase</strong> / <strong>fat</strong>) phase with recognizable names (e.g. coconut, olive, shea, tallow) to see quality estimates.
             </p>
           ) : (
             <>
               {Object.entries(SOAP_QUALITY_RANGES).map(([key, meta]) => (
-                <SoapQualityBarLight key={key} label={meta.label} value={soapQualities[key]} min={meta.min} max={meta.max} hint={meta.desc} />
+                <SoapQualityBar key={key} label={meta.label} value={soapQualities[key]} min={meta.min} max={meta.max} hint={meta.desc} />
               ))}
               {soapQualities.totalOilWeight > soapQualities.matchedWeight && (
-                <p style={{ fontSize: 11, color: "rgba(255,252,247,0.45)", marginTop: 12 }}>
-                  Some oil-phase ingredients were not matched to the built-in oil library; those grams are excluded from the estimate.
+                <p style={{ fontSize: 12, color: "#7A5C45", marginTop: 14, lineHeight: 1.45 }}>
+                  Some oil-phase ingredients were not matched to the SoapCalc-style oil list. Their weight still counts in the batch, but they are treated as 0% for every fatty acid, which lowers the quality numbers versus SoapCalc if those oils are in your calculator recipe.
                 </p>
               )}
             </>
@@ -207,7 +304,7 @@ export default function RecipeDetailsPage() {
       )}
 
       <div style={styles.bottomActions}>
-        <button type="button" onClick={() => navigate(`/batches/new?recipe=${id}`)} style={styles.btnPrimary}>
+        <button type="button" onClick={() => navigate(`/batches?new=1&recipe=${id}`)} style={styles.btnPrimary}>
           🧪 Start batch
         </button>
       </div>
@@ -215,29 +312,46 @@ export default function RecipeDetailsPage() {
   );
 }
 
-function SoapQualityBarLight({ label, value, min, max, hint }) {
+function SoapQualityBar({ label, value, min, max, hint }) {
   const inRange = value >= min && value <= max;
   const barW = Math.min(100, Math.max(0, value));
   return (
-    <div style={{ marginBottom: 14 }} title={hint}>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "rgba(255,252,247,0.65)", marginBottom: 4 }}>
-        <span>{label}</span>
-        <span style={{ color: inRange ? "#8FAF7E" : "#FDBA74", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>
+    <div style={{ marginBottom: 16 }} title={hint}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 14, marginBottom: 6 }}>
+        <span style={{ fontWeight: 600, color: "#1A1410" }}>{label}</span>
+        <span
+          style={{
+            color: inRange ? "#15803D" : "#C2410C",
+            fontFamily: "'JetBrains Mono', monospace",
+            fontWeight: 700,
+            fontSize: 14,
+          }}
+        >
           {value} {inRange ? "✓" : "!"}
         </span>
       </div>
-      <div style={{ height: 6, background: "rgba(255,252,247,0.12)", borderRadius: 3, overflow: "hidden" }}>
+      <div
+        style={{
+          height: 8,
+          background: "#E8D8C4",
+          borderRadius: 4,
+          overflow: "hidden",
+          border: "1px solid #D4BC94",
+        }}
+      >
         <div
           style={{
             width: `${barW}%`,
             height: "100%",
-            background: inRange ? "#6D9B58" : "#C97B5A",
+            background: inRange ? "#22C55E" : "#EA580C",
             borderRadius: 3,
             transition: "width 0.35s",
           }}
         />
       </div>
-      <div style={{ fontSize: 10, color: "rgba(255,252,247,0.35)", marginTop: 3 }}>typical range: {min}–{max}</div>
+      <div style={{ fontSize: 12, color: "#6B5346", marginTop: 5, fontWeight: 500 }}>
+        Typical range: {min}–{max}
+      </div>
     </div>
   );
 }
@@ -286,6 +400,17 @@ const styles = {
     fontFamily: "inherit",
     boxShadow: "0 2px 12px rgba(234, 88, 12, 0.4)",
   },
+  btnDanger: {
+    background: "transparent",
+    color: "#B91C1C",
+    border: "2px solid #FECACA",
+    borderRadius: 8,
+    padding: "7px 14px",
+    fontSize: 13,
+    fontWeight: 700,
+    cursor: "pointer",
+    fontFamily: "inherit",
+  },
   btnSecondary: {
     background: "#FFF0DC",
     color: "#3D2914",
@@ -329,6 +454,14 @@ const styles = {
   },
   shareLabel: { fontSize: 12, fontWeight: 700, color: UI.muted, marginRight: 4 },
   sectionTitle: { fontSize: 18, fontFamily: "'Playfair Display', serif", margin: "0 0 16px" },
+  qualitiesHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: 12,
+    flexWrap: "wrap",
+    marginBottom: 0,
+  },
   phaseTitle: {
     fontSize: 11,
     fontWeight: 700,

@@ -1,9 +1,10 @@
 import { useState, useMemo, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useRecipe, useCreateRecipe, useUpdateRecipe, useIngredients } from "../hooks/useApi";
+import toast from "react-hot-toast";
 
 const PHASES = {
-  soap: ["oils", "lye", "fragrance", "colorant", "additive"],
+  soap: ["oils", "water", "lye", "fragrance", "colorant", "additive"],
   lotion: ["water_phase", "oil_phase", "cool_down", "fragrance", "preservative"],
   lip_balm: ["wax", "oils", "fragrance", "additive"],
   candle: ["wax", "fragrance", "dye", "additive"],
@@ -23,9 +24,12 @@ const UNITS = ["g", "ml", "oz", "lb", "tsp", "tbsp", "%"];
 export default function RecipeBuilder() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const isEdit = !!id;
+  const cloneId = searchParams.get("clone");
 
   const { data: existingRecipe, isLoading } = useRecipe(id);
+  const { data: cloneRecipe, isLoading: isCloneLoading } = useRecipe(!isEdit ? cloneId : null);
   const { data: allIngredients = [] } = useIngredients({ stock: true });
   const createRecipe = useCreateRecipe();
   const updateRecipe = useUpdateRecipe();
@@ -44,6 +48,7 @@ export default function RecipeBuilder() {
   const [ingSearch, setIngSearch] = useState("");
   const [showIngPicker, setShowIngPicker] = useState(false);
   const [activePhase, setActivePhase] = useState(null);
+  const [cloneApplied, setCloneApplied] = useState(false);
 
   // Populate form when editing
   useEffect(() => {
@@ -60,6 +65,21 @@ export default function RecipeBuilder() {
       setIngredients(existingRecipe.ingredients || []);
     }
   }, [existingRecipe, isEdit]);
+
+  useEffect(() => {
+    if (isEdit || cloneApplied || !cloneRecipe) return;
+    setForm({
+      name: cloneRecipe.name ? `${cloneRecipe.name} (Copy)` : "",
+      category: cloneRecipe.category || "soap",
+      description: cloneRecipe.description || "",
+      yield_amount: cloneRecipe.yield_amount ?? 1000,
+      yield_unit: cloneRecipe.yield_unit || "g",
+      yield_count: cloneRecipe.yield_count ?? 12,
+      notes: cloneRecipe.notes || "",
+    });
+    setIngredients((cloneRecipe.ingredients || []).map((ing, idx) => ({ ...ing, sort_order: idx })));
+    setCloneApplied(true);
+  }, [isEdit, cloneApplied, cloneRecipe]);
 
   const phases = PHASES[form.category] || PHASES.default;
   const totalWeight = ingredients.reduce((s, i) => s + Number(i.amount || 0), 0);
@@ -89,6 +109,25 @@ export default function RecipeBuilder() {
     setIngSearch("");
   };
 
+  const addCustomLine = (phase) => {
+    const name = window.prompt("Label for this line (e.g. Distilled Water, NaOH):");
+    if (!name?.trim()) return;
+    const t = name.trim();
+    setIngredients((prev) => [
+      ...prev,
+      {
+        ingredient_id: null,
+        ingredient_name: t,
+        line_name: t,
+        inci_name: "",
+        amount: 100,
+        unit: "g",
+        phase: phase || phases[0],
+        sort_order: prev.length,
+      },
+    ]);
+  };
+
   const updateIngredient = (idx, field, val) => {
     setIngredients(prev => prev.map((i, n) => n === idx ? { ...i, [field]: val } : i));
   };
@@ -106,16 +145,28 @@ export default function RecipeBuilder() {
   };
 
   const handleSave = async () => {
+    for (const row of ingredients) {
+      if (!row.ingredient_id && !(row.line_name || row.ingredient_name || "").trim()) {
+        toast.error("Each line needs an ingredient or a custom label.");
+        return;
+      }
+    }
     const payload = {
       ...form,
-      ingredients: ingredients.map((i, n) => ({
-        ingredient_id: i.ingredient_id,
-        amount: Number(i.amount),
-        unit: i.unit,
-        phase: i.phase,
-        sort_order: n,
-        notes: i.notes,
-      })),
+      ingredients: ingredients.map((i, n) => {
+        const base = {
+          amount: Number(i.amount),
+          unit: i.unit,
+          phase: i.phase,
+          sort_order: n,
+          notes: i.notes,
+        };
+        if (i.ingredient_id) {
+          return { ...base, ingredient_id: i.ingredient_id };
+        }
+        const ln = (i.line_name || i.ingredient_name || "").trim();
+        return { ...base, line_name: ln };
+      }),
     };
 
     try {
@@ -130,7 +181,7 @@ export default function RecipeBuilder() {
     } catch {}
   };
 
-  if (isLoading) return <div style={styles.loading}>Loading recipe…</div>;
+  if (isLoading || (!isEdit && cloneId && isCloneLoading)) return <div style={styles.loading}>Loading recipe…</div>;
 
   return (
     <div style={styles.page}>
@@ -214,7 +265,14 @@ export default function RecipeBuilder() {
                 <div key={phase} style={{ marginBottom: 20 }}>
                   <div style={styles.phaseHeader}>
                     <span>{phase.replace(/_/g, " ").toUpperCase()}</span>
-                    <button onClick={() => { setActivePhase(phase); setShowIngPicker(true); }} style={styles.phaseAddBtn}>+ add</button>
+                    <span style={{ display: "flex", gap: 8 }}>
+                      {form.category === "soap" && (
+                        <button type="button" onClick={() => addCustomLine(phase)} style={{ ...styles.phaseAddBtn, color: "#B45309" }}>
+                          + custom line
+                        </button>
+                      )}
+                      <button type="button" onClick={() => { setActivePhase(phase); setShowIngPicker(true); }} style={styles.phaseAddBtn}>+ add</button>
+                    </span>
                   </div>
 
                   {phaseIngs.length === 0 && (
@@ -225,14 +283,19 @@ export default function RecipeBuilder() {
 
                   {phaseIngs.map((ri, phaseIdx) => {
                     const globalIdx = ingredients.findIndex(i => i === ri);
-                    const ing = allIngredients.find(i => i.id === ri.ingredient_id);
+                    const ing = ri.ingredient_id ? allIngredients.find(i => i.id === ri.ingredient_id) : null;
                     const pct = totalWeight ? ((Number(ri.amount) / totalWeight) * 100).toFixed(1) : 0;
                     const lineCost = ing?.cost_per_unit ? ing.cost_per_unit * Number(ri.amount) : null;
 
                     return (
                       <div key={globalIdx} style={styles.ingredientRow}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontSize: 14, fontWeight: 500 }}>{ri.ingredient_name}</div>
+                          <div style={{ fontSize: 14, fontWeight: 500 }}>
+                            {ri.ingredient_name}
+                            {!ri.ingredient_id && (
+                              <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, color: "#B45309" }}>CUSTOM</span>
+                            )}
+                          </div>
                           {ri.inci_name && <div style={{ fontSize: 11, color: "#5C3D1A", marginTop: 1 }}>{ri.inci_name}</div>}
                         </div>
                         <span style={styles.pct}>{pct}%</span>

@@ -1,0 +1,21 @@
+[Unit]
+Description=BatchCraft (Docker Compose stack)
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+User=tfjordan70
+Group=tfjordan70
+SupplementaryGroups=docker
+WorkingDirectory=/home/tfjordan70/craftbatch-app
+Environment=HOME=/home/tfjordan70
+# Install path: copy to /etc/systemd/system/batchcraft.service and adjust User/Group/WorkingDirectory if needed.
+ExecStart=/usr/bin/docker compose up -d --remove-orphans
+ExecStop=/usr/bin/docker compose stop
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

@@ -6,6 +6,9 @@ services:
       POSTGRES_USER: batchcraft
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-batchcraft}
       POSTGRES_DB: batchcraft
+    ports:
+      # Host-only bind so local venv / `flask` CLI can use DATABASE_URL (see .env.example).
+      - "127.0.0.1:${HOST_DB_PORT:-5433}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:

@@ -14,7 +14,7 @@ export default function BatchCompletion() {
   const completeBatch = useCompleteBatch();
 
   const [step, setStep] = useState(0);
-  const [usage, setUsage] = useState({});       // ingredient_id → { amount, lot_id }
+  const [usage, setUsage] = useState({});       // recipe line id → usage row
   const [yield_actual, setYieldActual] = useState("");
   const [unit_count, setUnitCount] = useState("");
   const [notes, setNotes] = useState("");
@@ -28,8 +28,9 @@ export default function BatchCompletion() {
   const initUsage = () => {
     if (Object.keys(usage).length === 0 && recipeIngs.length > 0) {
       const init = {};
-      recipeIngs.forEach(ri => {
-        init[ri.ingredient_id] = {
+      recipeIngs.forEach((ri) => {
+        init[ri.id] = {
+          recipe_line_id: ri.id,
           ingredient_id: ri.ingredient_id,
           ingredient_name: ri.ingredient_name,
           amount: (Number(ri.amount) * sf).toFixed(2),
@@ -41,8 +42,8 @@ export default function BatchCompletion() {
     }
   };
 
-  const updateUsage = (ingredientId, field, val) => {
-    setUsage(prev => ({ ...prev, [ingredientId]: { ...prev[ingredientId], [field]: val } }));
+  const updateUsage = (lineId, field, val) => {
+    setUsage((prev) => ({ ...prev, [lineId]: { ...prev[lineId], [field]: val } }));
   };
 
   const handleComplete = async () => {
@@ -52,19 +53,22 @@ export default function BatchCompletion() {
         yield_actual: Number(yield_actual),
         unit_count: unit_count ? Number(unit_count) : undefined,
         notes,
-        ingredients: Object.values(usage).map(u => ({
-          ingredient_id: u.ingredient_id,
-          lot_id: u.lot_id || undefined,
-          amount_used: Number(u.amount),
-          unit: u.unit,
-        })),
+        ingredients: Object.values(usage)
+          .filter((u) => u.ingredient_id)
+          .map((u) => ({
+            ingredient_id: u.ingredient_id,
+            lot_id: u.lot_id || undefined,
+            amount_used: Number(u.amount),
+            unit: u.unit,
+          })),
       });
       navigate("/batches");
     } catch {}
   };
 
   const totalCost = Object.values(usage).reduce((sum, u) => {
-    const ing = ingredients.find(i => i.id === u.ingredient_id);
+    if (!u.ingredient_id) return sum;
+    const ing = ingredients.find((i) => i.id === u.ingredient_id);
     return sum + (ing?.cost_per_unit || 0) * Number(u.amount || 0);
   }, 0);
 
@@ -96,7 +100,7 @@ export default function BatchCompletion() {
 
             <div style={{ marginTop: 28 }}>
               <h3 style={{ fontSize: 16, fontFamily: "'Playfair Display'", marginBottom: 12 }}>Scaled Ingredient List</h3>
-              {recipeIngs.map(ri => (
+              {recipeIngs.map((ri) => (
                 <div key={ri.id} style={styles.ingRow}>
                   <span style={{ fontSize: 14 }}>{ri.ingredient_name}</span>
                   <span style={{ fontFamily: "'JetBrains Mono'", fontSize: 14, fontWeight: 600, color: "#C2410C" }}>
@@ -113,50 +117,80 @@ export default function BatchCompletion() {
           <div>
             <h2 style={styles.stepTitle}>Record Actual Usage</h2>
             <p style={{ color: "#5C3D1A", marginBottom: 24, fontSize: 14 }}>
-              Adjust amounts if actuals differed from the recipe. Select the lot used for each ingredient for full traceability.
+              Adjust amounts if actuals differed from the recipe. For catalog ingredients, select the lot used for traceability.
+              Custom lines (lye, water, etc.) are not deducted from inventory.
             </p>
-            {recipeIngs.map(ri => {
-              const u = usage[ri.ingredient_id] || {};
-              const ing = ingredients.find(i => i.id === ri.ingredient_id);
+            {recipeIngs.map((ri) => {
+              const u = usage[ri.id] || {};
+              const ing = ri.ingredient_id ? ingredients.find((i) => i.id === ri.ingredient_id) : null;
               const expectedAmt = (Number(ri.amount) * sf).toFixed(2);
               const actualAmt = Number(u.amount || expectedAmt);
               const diff = actualAmt - Number(expectedAmt);
+              const isCustom = !ri.ingredient_id;
               return (
-                <div key={ri.ingredient_id} style={styles.usageCard}>
+                <div key={ri.id} style={styles.usageCard}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                     <div>
                       <div style={{ fontSize: 15, fontWeight: 600 }}>{ri.ingredient_name}</div>
                       <div style={{ fontSize: 12, color: "#5C3D1A" }}>Expected: {expectedAmt} {ri.unit}</div>
+                      {isCustom && (
+                        <div style={{ fontSize: 11, color: "#B45309", marginTop: 6, fontWeight: 600 }}>
+                          Label-only line — not deducted from inventory. Adjust amount for your records only.
+                        </div>
+                      )}
                     </div>
-                    {ing && <div style={{ fontSize: 12, color: "#6D9B58", textAlign: "right" }}>{ing.stock_on_hand.toLocaleString()} {ing.unit} in stock</div>}
+                    {ing && (
+                      <div style={{ fontSize: 12, color: "#6D9B58", textAlign: "right" }}>
+                        {ing.stock_on_hand.toLocaleString()} {ing.unit} in stock
+                      </div>
+                    )}
                   </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 10 }}>
-                    <div>
-                      <label style={styles.fieldLabel}>Actual amount ({ri.unit})</label>
-                      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                        <input type="number" value={u.amount ?? expectedAmt} step="0.01"
-                          onChange={e => updateUsage(ri.ingredient_id, "amount", e.target.value)}
-                          style={{ ...styles.input, fontFamily: "'JetBrains Mono'" }} />
-                        {Math.abs(diff) > 0.01 && (
-                          <span style={{ fontSize: 11, color: diff > 0 ? "#B5603C" : "#6D9B58", whiteSpace: "nowrap" }}>
-                            {diff > 0 ? "+" : ""}{diff.toFixed(2)}
-                          </span>
-                        )}
+                  {!isCustom && (
+                    <div style={{ display: "grid", gridTemplateColumns: "140px 1fr", gap: 10 }}>
+                      <div>
+                        <label style={styles.fieldLabel}>Actual amount ({ri.unit})</label>
+                        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                          <input
+                            type="number"
+                            value={u.amount ?? expectedAmt}
+                            step="0.01"
+                            onChange={(e) => updateUsage(ri.id, "amount", e.target.value)}
+                            style={{ ...styles.input, fontFamily: "'JetBrains Mono'" }}
+                          />
+                          {Math.abs(diff) > 0.01 && (
+                            <span style={{ fontSize: 11, color: diff > 0 ? "#B5603C" : "#6D9B58", whiteSpace: "nowrap" }}>
+                              {diff > 0 ? "+" : ""}
+                              {diff.toFixed(2)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <label style={styles.fieldLabel}>Lot used (for traceability)</label>
+                        <select value={u.lot_id || ""} onChange={(e) => updateUsage(ri.id, "lot_id", e.target.value)} style={styles.input}>
+                          <option value="">No lot selected</option>
+                          {(ing?.lots || []).map((lot) => (
+                            <option key={lot.id} value={lot.id}>
+                              {lot.lot_number || `Lot ${lot.id.slice(0, 6)}`}
+                              {lot.expiry_date ? ` (exp ${new Date(lot.expiry_date).toLocaleDateString()})` : ""}
+                            </option>
+                          ))}
+                        </select>
                       </div>
                     </div>
+                  )}
+                  {isCustom && (
                     <div>
-                      <label style={styles.fieldLabel}>Lot used (for traceability)</label>
-                      <select value={u.lot_id || ""} onChange={e => updateUsage(ri.ingredient_id, "lot_id", e.target.value)} style={styles.input}>
-                        <option value="">No lot selected</option>
-                        {(ing?.lots || []).map(lot => (
-                          <option key={lot.id} value={lot.id}>
-                            {lot.lot_number || `Lot ${lot.id.slice(0, 6)}`}
-                            {lot.expiry_date ? ` (exp ${new Date(lot.expiry_date).toLocaleDateString()})` : ""}
-                          </option>
-                        ))}
-                      </select>
+                      <label style={styles.fieldLabel}>Recorded amount ({ri.unit})</label>
+                      <input
+                        type="number"
+                        value={u.amount ?? expectedAmt}
+                        step="0.01"
+                        onChange={(e) => updateUsage(ri.id, "amount", e.target.value)}
+                        style={{ ...styles.input, fontFamily: "'JetBrains Mono'", maxWidth: 160 }}
+                      />
                     </div>
-                  </div>
+                  )}
                 </div>
               );
             })}

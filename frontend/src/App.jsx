@@ -10,6 +10,7 @@ import IngredientsPage from "./pages/IngredientsPage";
 import RecipesPage from "./pages/RecipesPage";
 import RecipeDetailsPage from "./pages/RecipeDetailsPage";
 import BatchesPage from "./pages/BatchesPage";
+import DashboardPage from "./pages/DashboardPage";
 import LyeCalculator from "./pages/LyeCalculator";
 import FragranceCalculator from "./pages/FragranceCalculator";
 
@@ -49,7 +50,7 @@ const NAV_ITEMS = [
   { to: "/batches", label: "Batches", icon: "🧪" },
   { to: "/ingredients", label: "Ingredients", icon: "🌿" },
   { to: "/inventory", label: "Inventory", icon: "📦" },
-  { to: "/calculators/lye", label: "Lye Calc", icon: "⚗️" },
+  { to: "/calculators/soap", label: "Soap Calc", icon: "⚗️" },
   { to: "/calculators/fragrance", label: "Fragrance Calc", icon: "🌸" },
 ];
 
@@ -64,9 +65,21 @@ function Sidebar() {
       position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 100,
       boxShadow: "4px 0 24px rgba(124, 45, 18, 0.35)",
     }}>
-      <div style={{ padding: "28px 20px 24px" }}>
-        <div style={{ fontFamily: "'Playfair Display'", fontSize: 22, color: UI.sidebarText, letterSpacing: "-0.5px", fontWeight: 700 }}>BatchCraft</div>
-        <div style={{ fontSize: 11, color: UI.sidebarTextDim, marginTop: 4, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600 }}>
+      <div style={{ padding: "24px 16px 20px" }}>
+        <NavLink to="/" end style={{ textDecoration: "none", display: "block", marginBottom: 10 }}>
+          <img
+            src="/assets/batchcraft-logo.png"
+            alt="BatchCraft"
+            style={{
+              width: "100%",
+              maxHeight: 52,
+              objectFit: "contain",
+              objectPosition: "left center",
+              display: "block",
+            }}
+          />
+        </NavLink>
+        <div style={{ fontSize: 11, color: UI.sidebarTextDim, marginTop: 2, letterSpacing: "0.1em", textTransform: "uppercase", fontWeight: 600 }}>
           {tenant?.name || "Loading…"}
         </div>
       </div>
@@ -158,8 +171,14 @@ function Login() {
         width: 400, background: UI.card, borderRadius: 20, border: `2px solid ${UI.border}`,
         padding: 40, boxShadow: "0 12px 48px rgba(194, 65, 12, 0.15)",
       }}>
-        <h1 style={{ fontFamily: "'Playfair Display'", fontSize: 30, marginBottom: 6, color: UI.ink, fontWeight: 700 }}>BatchCraft</h1>
-        <p style={{ fontSize: 15, color: UI.muted, marginBottom: 28, fontWeight: 500 }}>{mode === "login" ? "Sign in to your workshop" : "Create your workspace"}</p>
+        <h1 style={{ margin: "0 0 8px", lineHeight: 0 }}>
+          <img
+            src="/assets/batchcraft-logo.png"
+            alt="BatchCraft"
+            style={{ width: "100%", maxWidth: 260, height: "auto", display: "block", margin: "0 auto" }}
+          />
+        </h1>
+        <p style={{ fontSize: 15, color: UI.muted, marginBottom: 28, fontWeight: 500, textAlign: "center" }}>{mode === "login" ? "Sign in to your workshop" : "Create your workspace"}</p>
 
         {mode === "register" && (
           <>
@@ -207,14 +226,6 @@ const inputStyle = {
   fontSize: 15, color: UI.ink, outline: "none", fontFamily: "inherit", fontWeight: 500,
 };
 
-// ─── Placeholder pages (replace with full implementations) ────────────────────
-
-const Placeholder = ({ title }) => (
-  <div style={{ padding: "40px", color: UI.muted, fontFamily: "'Playfair Display'", fontSize: 26, fontWeight: 600 }}>
-    {title} <span style={{ fontSize: 15, fontFamily: "'DM Sans'", fontWeight: 500, color: UI.accent }}>(coming soon)</span>
-  </div>
-);
-
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -235,7 +246,7 @@ export default function App() {
             <RequireAuth>
               <AppShell>
                 <Routes>
-                  <Route path="/" element={<Placeholder title="Dashboard" />} />
+                  <Route path="/" element={<DashboardPage />} />
                   <Route path="/recipes" element={<RecipesPage />} />
                   <Route path="/recipes/new" element={<RecipeBuilder />} />
                   <Route path="/recipes/:id/edit" element={<RecipeBuilder />} />
@@ -244,7 +255,8 @@ export default function App() {
                   <Route path="/batches/:id/complete" element={<BatchCompletion />} />
                   <Route path="/ingredients" element={<IngredientsPage />} />
                   <Route path="/inventory" element={<IngredientsPage />} />
-                  <Route path="/calculators/lye" element={<LyeCalculator />} />
+                  <Route path="/calculators/soap" element={<LyeCalculator />} />
+                  <Route path="/calculators/lye" element={<Navigate to="/calculators/soap" replace />} />
                   <Route path="/calculators/fragrance" element={<FragranceCalculator />} />
                 </Routes>
               </AppShell>

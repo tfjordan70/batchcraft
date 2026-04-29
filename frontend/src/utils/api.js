@@ -7,6 +7,9 @@ const api = axios.create({
 
 // Inject auth token on every request
 api.interceptors.request.use((config) => {
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
+  }
   try {
     const auth = JSON.parse(localStorage.getItem("batchcraft-auth") || "{}");
     const token = auth?.state?.accessToken;

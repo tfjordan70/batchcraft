@@ -1,10 +1,52 @@
 from flask import Blueprint, request, jsonify
+from sqlalchemy import or_
+
 from app import db
-from app.models import Recipe, RecipeIngredient, RecipeVersion, Ingredient
-from app.api.helpers import tenant_required, require_role
-import json
+from app.models import Recipe, RecipeIngredient, RecipeVersion, Batch, Ingredient
+from app.api.helpers import tenant_required
 
 bp = Blueprint("recipes", __name__)
+
+
+def _recipe_line_from_payload(recipe_id, ing_data, sort_index, tenant_id):
+    """Build a RecipeIngredient from API JSON: either linked ingredient or label-only line (lye/water)."""
+    amount = ing_data.get("amount")
+    if amount is None:
+        raise ValueError("Each recipe line requires an amount")
+    try:
+        amount_f = float(amount)
+    except (TypeError, ValueError) as e:
+        raise ValueError("Invalid amount on a recipe line") from e
+
+    iid = ing_data.get("ingredient_id")
+    lname = (ing_data.get("line_name") or "").strip() or None
+
+    if iid:
+        ing = Ingredient.query.filter_by(id=iid, tenant_id=tenant_id).first()
+        if not ing:
+            raise ValueError("Unknown ingredient_id for this workspace")
+        return RecipeIngredient(
+            recipe_id=recipe_id,
+            ingredient_id=iid,
+            line_name=None,
+            amount=amount_f,
+            unit=ing_data.get("unit", "g"),
+            phase=ing_data.get("phase"),
+            sort_order=ing_data.get("sort_order", sort_index),
+            notes=ing_data.get("notes"),
+        )
+    if lname:
+        return RecipeIngredient(
+            recipe_id=recipe_id,
+            ingredient_id=None,
+            line_name=lname,
+            amount=amount_f,
+            unit=ing_data.get("unit", "g"),
+            phase=ing_data.get("phase"),
+            sort_order=ing_data.get("sort_order", sort_index),
+            notes=ing_data.get("notes"),
+        )
+    raise ValueError("Each recipe line needs ingredient_id or line_name")
 
 
 @bp.route("/", methods=["GET"])
@@ -47,18 +89,13 @@ def create_recipe(tenant_id, current_user):
     db.session.add(recipe)
     db.session.flush()
 
-    # Add ingredients if provided
-    for i, ing_data in enumerate(data.get("ingredients", [])):
-        ri = RecipeIngredient(
-            recipe_id=recipe.id,
-            ingredient_id=ing_data["ingredient_id"],
-            amount=ing_data["amount"],
-            unit=ing_data.get("unit", "g"),
-            phase=ing_data.get("phase"),
-            sort_order=ing_data.get("sort_order", i),
-            notes=ing_data.get("notes"),
-        )
-        db.session.add(ri)
+    try:
+        for i, ing_data in enumerate(data.get("ingredients", [])):
+            ri = _recipe_line_from_payload(recipe.id, ing_data, i, tenant_id)
+            db.session.add(ri)
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 400
 
     db.session.commit()
     return jsonify(recipe.to_dict(include_ingredients=True)), 201
@@ -85,22 +122,39 @@ def update_recipe(tenant_id, current_user, recipe_id):
 
     # Replace ingredients if provided
     if "ingredients" in data:
+        try:
+            pending = [
+                _recipe_line_from_payload(recipe.id, ing_data, i, tenant_id)
+                for i, ing_data in enumerate(data["ingredients"])
+            ]
+        except ValueError as e:
+            return jsonify({"error": str(e)}), 400
         RecipeIngredient.query.filter_by(recipe_id=recipe.id).delete()
-        for i, ing_data in enumerate(data["ingredients"]):
-            ri = RecipeIngredient(
-                recipe_id=recipe.id,
-                ingredient_id=ing_data["ingredient_id"],
-                amount=ing_data["amount"],
-                unit=ing_data.get("unit", "g"),
-                phase=ing_data.get("phase"),
-                sort_order=ing_data.get("sort_order", i),
-                notes=ing_data.get("notes"),
-            )
+        for ri in pending:
             db.session.add(ri)
         recipe.version += 1
 
     db.session.commit()
     return jsonify(recipe.to_dict(include_ingredients=True))
+
+
+@bp.route("/<recipe_id>", methods=["DELETE"])
+@tenant_required
+def delete_recipe(tenant_id, current_user, recipe_id):
+    """Permanently remove recipe. Batches keep history but are unlinked from this recipe."""
+    recipe = Recipe.query.filter_by(id=recipe_id, tenant_id=tenant_id).first_or_404()
+
+    version_ids = [v.id for v in RecipeVersion.query.filter_by(recipe_id=recipe_id).all()]
+    batch_filter = [Batch.recipe_id == recipe_id]
+    if version_ids:
+        batch_filter.append(Batch.recipe_version_id.in_(version_ids))
+    for batch in Batch.query.filter(or_(*batch_filter)).all():
+        batch.recipe_id = None
+        batch.recipe_version_id = None
+
+    db.session.delete(recipe)
+    db.session.commit()
+    return jsonify({"message": "Recipe deleted"})
 
 
 @bp.route("/<recipe_id>/archive", methods=["POST"])
@@ -166,8 +220,9 @@ def snapshot_recipe(recipe):
         "ingredients": [
             {
                 "ingredient_id": ri.ingredient_id,
-                "name": ri.ingredient.name,
-                "inci_name": ri.ingredient.inci_name,
+                "line_name": ri.line_name,
+                "name": (ri.ingredient.name if ri.ingredient else ri.line_name),
+                "inci_name": ri.ingredient.inci_name if ri.ingredient else None,
                 "amount": float(ri.amount),
                 "unit": ri.unit,
                 "phase": ri.phase,
